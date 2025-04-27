@@ -1,0 +1,353 @@
+
+\subsection{Unassessed Exercise Sheet 1}
+\subsubsection{Question 1: More SQL queries}
+
+For ease of reference, here is a description of the various tables in ``fundamentals'' database:
+
+\textbf{Table "staff"}
+\begin{tabular}{ll}
+\textbf{Attribute} & \textbf{Type} \\
+\hline
+sid & integer \\
+title & character varying(6) \\
+firstname & character varying(15) \\
+lastname & character varying(20) \\
+email & character varying(40) \\
+office & integer \\
+phone & integer \\
+\end{tabular}
+
+\textbf{Table "courses"}
+\begin{tabular}{ll}
+\textbf{Attribute} & \textbf{Type} \\
+\hline
+level & integer \\
+cid & integer \\
+name & character varying \\
+credits & integer \\
+semester & integer \\
+bc & character(8) \\
+\end{tabular}
+
+\textbf{Table "lecturing"}
+\begin{tabular}{ll}
+\textbf{Attribute} & \textbf{Type} \\
+\hline
+cid & integer \\
+sid & integer \\
+year & integer \\
+numbers & integer \\
+\end{tabular}
+
+\textbf{Table "period"}
+\begin{tabular}{ll}
+\textbf{Attribute} & \textbf{Type} \\
+\hline
+semester & integer \\
+description & character varying \\
+\end{tabular}
+
+\textbf{Table "allmarks--"}
+\begin{tabular}{ll}
+\textbf{Attribute} & \textbf{Type} \\
+\hline
+student & character(6) \\
+mark & integer \\
+bc & character(8) \\
+\end{tabular}
+
+The ``staff'' table holds information about staff members. The attribute ``sid'' (short for ``staff id'') is a unique integer for each record in the table.
+
+The ``course'' table holds information about courses, with ``cid'' being a unique ID for the courses. Each course is at a ``level'' (1, 2, 3, or 4), carries a certain number of ``credits'' and is taught in a ``semester'' (1, 2, 3, or 4). The ``period'' table describes what the four ``semester'' codes mean. The attribute ``bc'' (for ``banner code'') is the ID number assigned by the University for the course, e.g., 06-21923 for ``Fundamentals: Databases''.
+
+The ``lecturing'' table has information about which staff member taught which course in a given year. It also records the number of students in the course in that instance.
+
+The ``allmarks15'' table (and other similar tables) store the marks received by the students in each course in a particular year. The course is identified here by its banner code.
+
+\begin{enumerate}[label=\alph*)]
+\item Use ``ORDER BY'' on the ``staff'' table in such a way that the details of Jim Yandle are listed somewhere at the top.
+
+\item Which courses at level 3 or 4 carry more than 10 credits but do not take place in semester 2? (You must have a look at the table ``period'' first in order to understand the meaning of the integer in the ``semester'' field.)
+
+\item For which staff members are either phone number or office number missing in the database? (See paragraph 14 in the Lecture Notes.)
+
+\item Which staff members have a phone number in the database but no office number?
+
+You can do this in at least two ways: (i) using a single SELECT query with complex WHERE clause, and (ii) using EXCEPT or EXCEPT ALL to combine multiple SELECT queries. Try both the approaches and see if there is a difference.
+
+\item Which courses (listed by their banner codes ``bc'' and name) were taken by students in 2017, judged by the existence of students taking their exams? You can attempt this first by listing banner codes only, and then add in the course names in a second revision.
+
+\item Which courses (listed by their ``cid'') were taught in 2017?
+
+\textbf{Pause} Does it match the answer to the previous question? If not, how on earth are we going to find out where the mismatch is?
+
+\item Which courses (listed by their identifier ``cid'') were new in 2015 (i.e., were not taught in earlier years)?
+
+\item (Maybe hard) Develop a query which employs ``EXCEPT ALL'' to find all those courses which appear more than once for the same year in ``lecturing''. What is the reason for the repetition?
+\end{enumerate}
+
+\paragraph{a.}
+\begin{verbatim}
+SELECT *
+FROM staff
+ORDER BY title, lastname DESC;
+\end{verbatim}
+
+\paragraph{b.}
+\begin{verbatim}
+SELECT cid, name, credits, semester
+FROM course
+WHERE (level=3 OR level=4) AND credits>10
+AND NOT (semester=2 OR semester=3);
+\end{verbatim}
+(There are ten such courses.)
+
+\paragraph{c.}
+\begin{verbatim}
+SELECT firstname, lastname, phone, office
+FROM staff
+WHERE (phone IS NULL) OR (office IS NULL);
+\end{verbatim}
+(There are nine such lecturers.)
+
+\paragraph{d. Single SELECT query}
+\begin{verbatim}
+SELECT lastname
+FROM staff
+WHERE office IS NULL AND phone IS NOT NULL;
+\end{verbatim}
+
+\paragraph{Multiple SELECT queries}
+\begin{verbatim}
+SELECT lastname
+FROM staff
+WHERE phone IS NOT NULL
+EXCEPT
+SELECT lastname
+FROM staff
+WHERE office IS NOT NULL;
+\end{verbatim}
+(There are four such lecturers.)
+
+\paragraph{e.}
+\begin{verbatim}
+SELECT DISTINCT bc
+FROM allmarks17;
+\end{verbatim}
+(75 courses had students taking exams.)
+
+Adding course names:
+\begin{verbatim}
+SELECT DISTINCT course.bc, name
+FROM allmarks17, course
+WHERE allmarks17.bc = course.bc;
+\end{verbatim}
+
+\paragraph{f.}
+\begin{verbatim}
+SELECT DISTINCT cid
+FROM lecturing
+WHERE year=2017;
+\end{verbatim}
+
+\begin{verbatim}
+SELECT DISTINCT course.cid, name
+FROM lecturing, course
+WHERE lecturing.cid = course.cid AND year=2017;
+\end{verbatim}
+(71 courses were taught.)
+
+\paragraph{g.}
+\begin{verbatim}
+SELECT cid
+FROM lecturing
+WHERE year=2015
+EXCEPT
+SELECT cid
+FROM lecturing
+WHERE year=2014 OR year=2013;
+\end{verbatim}
+(There are eight such courses.)
+
+\paragraph{h.}
+\begin{verbatim}
+SELECT cid, year
+FROM lecturing
+EXCEPT ALL
+SELECT DISTINCT cid, year
+FROM lecturing;
+\end{verbatim}
+
+Alternative using \texttt{GROUP BY}:
+\begin{verbatim}
+SELECT cid, year
+FROM lecturing
+GROUP BY cid, year
+HAVING count(*) > 1;
+\end{verbatim}
+
+\subsubsection{Question 2: Aggregation}
+\begin{enumerate}[label=\alph*)]
+\item Write a query to list all courses (by their identifier ``cid'') and the average enrolment over the years. Modify the query so that it also lists the number of different staff members (as identified by ``sid'') involved in teaching it.
+
+\item Develop a query which employs ``GROUP BY'' to find the courses which appear more than once for the same year in ``lecturing''. Does this match the answer to the previous question? Why not?
+\end{enumerate}
+
+\paragraph{a. Average enrolment}
+\begin{verbatim}
+SELECT cid, ROUND(AVG(numbers))
+FROM lecturing
+GROUP BY cid
+ORDER BY AVG(numbers);
+\end{verbatim}
+
+Including distinct staff counts:
+\begin{verbatim}
+SELECT cid, ROUND(AVG(numbers)), COUNT(DISTINCT sid)
+FROM lecturing
+GROUP BY cid
+ORDER BY AVG(numbers);
+\end{verbatim}
+
+\paragraph{b. Courses appearing more than once}
+\begin{verbatim}
+SELECT cid, year
+FROM lecturing
+GROUP BY cid, year
+HAVING count(*) > 1;
+\end{verbatim}
+
+\subsubsection{Question 3: Nested queries}
+\begin{enumerate}[label=\alph*)]
+\item Which courses (listed by their course title) were taken by students in 2017, judged by the existence of students taking their exams?
+
+\item Which courses had students taking their exams in 2017 even though they were not taught in 2017?
+
+\item Develop a query which lists those courses (by their course code ``bc'') which (in 2015, say) had a higher average mark than the overall average. This should be a general query and not contain the overall average explicitly as a numeric constant.
+
+\item List the staff members who did not do any lecturing.
+\end{enumerate}
+
+\paragraph{a. Courses taken in 2017}
+\begin{verbatim}
+SELECT name
+FROM course
+WHERE bc IN (SELECT bc FROM allmarks17);
+\end{verbatim}
+
+Alternative:
+\begin{verbatim}
+SELECT DISTINCT cid, name
+FROM allmarks17, course
+WHERE allmarks17.bc = course.bc;
+\end{verbatim}
+
+\paragraph{b. Courses with exams but no teaching in 2017}
+\begin{verbatim}
+SELECT name
+FROM course
+WHERE bc IN (SELECT bc FROM allmarks17)
+AND cid NOT IN (SELECT cid FROM lecturing WHERE year = 2017);
+\end{verbatim}
+
+Alternative using \texttt{EXCEPT}:
+\begin{verbatim}
+SELECT name
+FROM course
+WHERE bc IN (SELECT bc FROM allmarks17)
+EXCEPT
+SELECT name
+FROM course
+WHERE cid IN (SELECT cid FROM lecturing WHERE year=2017);
+\end{verbatim}
+
+\paragraph{c. Courses with higher than average marks in 2015}
+\begin{verbatim}
+SELECT bc, AVG(mark)
+FROM allmarks15
+GROUP BY bc
+HAVING AVG(mark) > (SELECT AVG(mark) FROM allmarks15);
+\end{verbatim}
+
+\paragraph{d. Staff with no lecturing}
+\begin{verbatim}
+SELECT sid, firstname, lastname
+FROM staff
+WHERE sid NOT IN (SELECT sid FROM lecturing);
+\end{verbatim}
+
+Alternative using \texttt{NOT EXISTS}:
+\begin{verbatim}
+SELECT sid, firstname, lastname
+FROM staff
+WHERE NOT EXISTS (SELECT * FROM lecturing WHERE lecturing.sid = staff.sid);
+\end{verbatim}
+
+Using \texttt{EXCEPT} (only sids):
+\begin{verbatim}
+SELECT sid
+FROM staff
+EXCEPT
+SELECT sid
+FROM lecturing;
+\end{verbatim}
+\subsubsection{Question 4: From an old exam}
+\begin{enumerate}[label=\alph*)]
+\item List all students (by registration number) who hard-failed the course '06 02525' in 2017.
+
+\item Compute the number of students and the number of courses for which marks are recorded in ``allmarks17'' in a single query.
+
+\item What was the percentage of first class marks overall in 2016?
+
+\item List all courses and their average mark for 2016 and for 2017 in a single query. (Ignore those courses which were only examined in one of the two years.)
+
+\item Adapt your query from the previous question so that it only lists those courses where in both years there were at least 100 students taking the exam.
+\end{enumerate}
+
+\paragraph{a. Students hard-failed '06 02525' in 2017}
+\begin{verbatim}
+SELECT DISTINCT student
+FROM allmarks17
+WHERE bc = '06 02525' AND mark < 40;
+\end{verbatim}
+(None found.)
+
+\paragraph{b. Number of students and courses}
+\begin{verbatim}
+SELECT COUNT(DISTINCT student) AS "Number of students",
+COUNT(DISTINCT bc) AS "Number of courses"
+FROM allmarks17;
+\end{verbatim}
+
+\paragraph{c. Percentage of first class marks 2016}
+\begin{verbatim}
+SELECT FirstClass.count * 100 / AllResults.count AS "Percentage of first class marks"
+FROM (SELECT COUNT(*) AS count FROM allmarks16) AS AllResults,
+     (SELECT COUNT(*) AS count FROM allmarks16 WHERE mark >= 70) AS FirstClass;
+\end{verbatim}
+
+Compact version:
+\begin{verbatim}
+SELECT 100*(SELECT COUNT(*) FROM allmarks16 WHERE mark >= 70)/COUNT(*)
+FROM allmarks16;
+\end{verbatim}
+
+\paragraph{d. Average marks 2016 and 2017}
+\begin{verbatim}
+SELECT averages16.bc AS "Banner Code",
+       averages16.average AS "Average mark in 2016",
+       averages17.average AS "Average mark in 2017"
+FROM (SELECT bc, AVG(mark) AS average FROM allmarks16 GROUP BY bc) AS averages16,
+     (SELECT bc, AVG(mark) AS average FROM allmarks17 GROUP BY bc) AS averages17
+WHERE averages16.bc = averages17.bc;
+\end{verbatim}
+
+\paragraph{e. Courses with $\geq 100$ students both years}
+\begin{verbatim}
+SELECT averages16.bc AS "Banner Code",
+       averages16.average AS "Average mark in 2016",
+       averages17.average AS "Average mark in 2017"
+FROM (SELECT bc, AVG(mark) AS average FROM allmarks16 GROUP BY bc HAVING COUNT(*) >= 100) AS averages16,
+     (SELECT bc, AVG(mark) AS average FROM allmarks17 GROUP BY bc HAVING COUNT(*) >= 100) AS averages17
+WHERE averages16.bc = averages17.bc;
+\end{verbatim}

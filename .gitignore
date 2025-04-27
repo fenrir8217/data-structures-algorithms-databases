@@ -2,6 +2,9 @@
 *.aux
 *.log
 *.out
+*.fls
+*.gz
+*.fdb_latexmk
 
 # Ignore main LaTeX output
 data-structures-algorithms-databases.pdf

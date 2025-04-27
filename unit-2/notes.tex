@@ -1,197 +1,222 @@
-\subsection{Relational Design by Decomposition}
+\subsection{Manipulation of a Sorted Array}
 
-In its simplest form, all data could be stored in one large table with several columns.
-The problem with this is that
+To delete an element from a sorted array
+\begin{enumerate}
+  \item find the element to be deleted --- \( \bigo{\log n} \) time complexity (efficient), and
+  \item shift the following elements left --- \( \bigo{n} \) time complexity (inefficient).
+\end{enumerate}
+Thus, deleting an element from a sorted array has \( \bigo{n} \) time complexity in both the worst case and on average.
+
+To insert an element into a sorted array
+\begin{enumerate}
+  \item find the position for insertion --- \( \bigo{\log n} \) time complexity (efficient), and, before insertion,
+  \item shift the following elements right --- \( \bigo{n} \) time complexity (inefficient).
+\end{enumerate}
+Thus, inserting an element into a sorted array has \( \bigo{n} \) time complexity in both the worst case and on average.
+It also has the added complexity of having to check the capacity of the array.
+
+Although it is efficient to find elements in a sorted array using binary~search, it is not efficient to insert into, or delete from, a sorted array.
+Alternative data structures, such as \emph{sorted~trees} should be considered for applications that require frequent insertion and deletion.
+
+\subsection{Binary Tree}
+
+A \emph{binary~tree} is a data structure whose elements, or \emph{nodes} each have two \emph{subtrees}.
+A subtree may be an empty tree.
+A node whose subtrees are both empty is a \emph{leaf~node}.
+Each non-empty node of a binary~tree has a label that represents the value of an element.
+An element can be of any data~type.
+All elements in a tree have the same type.
+
+The fundamental rules for building a binary~tree are as follows.
+\begin{enumerate}
+  \item It is possible to have an empty~tree, denoted by \texttt{Empty} or \( \square \).
+  \item Given a label \texttt{x} and two trees, \texttt{left} and \texttt{right}, a new tree \texttt{Fork(x, left, right)} can be built with \texttt{left} and \texttt{right} as the left and right subtrees, respectively, of a \emph{root} node with label \texttt{x}.
+\end{enumerate}
+\begin{figure}[!htp]
+  \centering
+  \begin{forest}
+    [\texttt{x}
+      [\texttt{left}, subtree]
+      [\texttt{right}, subtree]]
+  \end{forest}
+\end{figure}
+Thus, all binary~trees can be built using only the empty~tree \( \square \) and the fork tree \texttt{Fork}.
+
+The \emph{size} of a tree is the number of non-empty nodes it contains.
+The \emph{height} of a tree is the maximum number of edges needed to reach an empty subtree from the root.
+Formulae for the size and height of a binary~tree can be defined as follows.
+\begin{lstlisting}[mathescape=true]
+#nodes($ \square $) = 0
+#nodes(Fork(x, left, right))
+    = 1 + #nodes(left) + #nodes(right)
+
+height($ \square $) = 0
+height(Fork(x, left, right))
+    = 1 + max(height(left), height(right))
+\end{lstlisting}
+
+\subsection{Perfectly Balanced Binary Tree}
+
+A binary~tree is \emph{perfectly balanced} if the left and right subtrees of any node have the same height.
+\begin{lstlisting}[mathescape=true]
+isPB($ \square $) = true
+isPB(Fork(x, left, right))
+    = (height(left) == height(right))
+      && isPB(left)
+      && isPB(right)
+\end{lstlisting}
+
+The number of nodes at level~\( n \) of a perfectly balanced binary~tree, where \( n \) increases from zero at the root, is \( 2^{n} \).
+Thus, the total number of non-empty nodes in a perfectly balanced binary~tree of height \( H \) is given by
+\begin{equation*}
+  \sum_{n=0}^{H-1} 2^{n} = 2^{H} - 1
+\end{equation*}
+
+Formulae relating the size and height of a perfectly balanced binary~tree can be defined as follows.
+\begin{lstlisting}[mathescape=true]
+#nodes(t) = 2^height(t) - 1
+height(t) = log(#nodes(t) + 1)
+\end{lstlisting}
+
+The height of a balanced binary~tree is significantly smaller than its size.
+Thus, a large balanced, or nearly balanced, binary~tree has a small height.
+This property can be exploited in order to organise data in such a way that elements can be found, inserted and deleted quickly.
+This relies on the tree being sorted.
+
+\subsection{Binary Search Tree (BST)}
+
+\subsubsection{Sorted Tree}
+
+A tree is sorted if
 \begin{itemize}
-  \item the redundancy in repeated data will lead to a tremendous waste of space, and
-  \item the throughput and availability of the data is diminished by the size of the table.
+  \item the value of each node in the left subtree is less than the value of the root,
+  \item the value of each node in the right subtree is greater than the value of the root, and
+  \item the left and right subtrees are themselves sorted.
+\end{itemize}
+It follows that a sorted tree has no repetitions, although some implementations do allow repetitions.
+
+A \emph{binary~search tree} (BST) is simply a sorted binary~tree.
+It is not necessarily balanced.
+Formulae to assert that a binary~tree is sorted can be defined as follows.
+\begin{lstlisting}[mathescape=true]
+isBST($ \square $) = true
+isBST(Fork(x, left, right))
+    = smaller(left, x) && bigger(right, x)
+      && isBST(left) && isBST(right)
+
+smaller($ \square $, x) = true
+smaller(Fork(y, left, right), x)
+    = (y < x) && smaller(left, x) && smaller(right, x)
+
+bigger($ \square $, x) = true
+bigger(Fork(y, left, right), x)
+    = (y > x) && bigger(left, x) && bigger(right, x)
+\end{lstlisting}
+
+\subsubsection{Search}
+
+The search specification for a BST is as follows.
+Given an BST \( t \), and a search value \( x \), find an integer \( i \) such that
+\begin{itemize}
+  \item if there is no index \( j \) such that the \( j \)th element of \( t \) is equal to \( x \), then \( i \) is \( -1 \),
+  \item otherwise, the \( i \)th element of \( t \) is equal to \( x \).
 \end{itemize}
 
-Instead, the large table is \emph{decomposed} into several smaller tables.
-
-\subsection{Functional Dependency Notation}
-
-\emph{Functional~dependencies} are a generalisation of keys.
-The functional dependencies of a relation are based on knowledge of the real world.
-All instances of the relation must adhere to its functional dependencies.
-
-\begin{table}[htp]
-  \centering
-  \caption*{Attributes of the \emph{students} relation.}
-  \begin{tabular}{llllllll}
-    \toprule
-    sID & sName & sAddress & fdUniCode & fdUniName & fdUniCity & fdUniMark & fdGrade \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Suppose that the `fdGrade' attribute of the students relation is based on the corresponding `fdMark'.
-For example, a mark of 70 may map to a grade of A, and a mark of 60 may map to a grade of B\@.
-It can be said that `fdGrade' is \emph{functionally~determined} by `fdMark', or `fdMark' \emph{functionally~determines} `fdGrade'.
-In other words, any two tuples with the same `fdMark' must have the same `fdGrade'.
-\begin{equation*}
-  \text{fdMark} \rightarrow \text{fdGrade}
-\end{equation*}
-
-For every pair of tuples \( t \) and \( u \) that are elements of the student relation, the equality of the `fdMark' of both tuples implies the equality of the `fdGrade' of both tuples.
-\begin{equation*}
-  \forall\ t,u \in \text{students}: \quad t.\text{fdMark} = u.\text{fdMark} \implies t.\text{fdGrade} = u.\text{fdGrade}
-\end{equation*}
-
-In general, the functional dependency by which a set of attributes \( \itol{A} = \left\{ a_1, a_2, \ldots, a_m \right\} \) functionally determines a set of attributes \( \itol{B} = \left\{ b_1, b_2, \ldots, b_n \right\} \) in a relation \( R \) is defined as
-\begin{equation*}
-  \itol{A} \rightarrow \itol{B}
-\end{equation*}
-\begin{equation*}
-  \forall\ t,u \in R: \quad t.\itol{A} = u.\itol{A} \implies t.\itol{B} = u.\itol{B}
-\end{equation*}
-
-\subsection{Interpreting Functional Dependencies}
-
-The student~ID uniquely identifies a student; no two students can have the same ID\@.
-\begin{equation*}
-  \text{sID} \rightarrow \text{sName}
-\end{equation*}
-
-The student~ID uniquely identifies the registered address; a student cannot be registered under two addresses.
-\begin{equation*}
-  \text{sID} \rightarrow \text{sAddress}
-\end{equation*}
-
-The first~degree university~code uniquely identifies the name and city of the university; no two universities can have the same university~code.
-\begin{equation*}
-  \text{fdUniCode} \rightarrow \text{fdUniName}, \text{fdUniCity}
-\end{equation*}
-
-The name and city of a university uniquely identifies the university; no two universities in the same city can have the same name.
-\begin{equation*}
-  \text{fdUniName}, \text{fdUniCity} \rightarrow \text{fdUniCode}
-\end{equation*}
-
-The student~ID uniquely identifies the first~degree mark of the student with that ID; a student can only have one first~degree mark.
-\begin{equation*}
-  \text{sID} \rightarrow \text{fdMark}
-\end{equation*}
-
-The first~degree mark determines the first~degree grade; any two students with the same mark must have the same grade.
-\begin{equation*}
-  \text{fdMark} \rightarrow \text{fdGrade}
-\end{equation*}
-
-The student~ID uniquely identifies the first~degree grade of the student with that ID; a student can only have one first~degree grade.
-\begin{equation*}
-  \text{sID} \rightarrow \text{fdGrade}
-\end{equation*}
-
-\subsection{Functional Dependencies and Keys}
-
-A key is a set of attributes that uniquely identifies a tuple.
-If a set of attributes \( \itol{A} \) functionally determines all attributes of a relation \( R \) with no duplicates, then \( \itol{A} \) is a key of \( R \)\@.
-
-\subsection{Types of Functional Dependency}
-
-\subsubsection{Trivial Dependencies}
-
-A functional dependency \( \itol{A} \rightarrow \itol{B} \) is said to be a \emph{trivial} functional dependency if \( \itol{B} \) is a subset of \( \itol{A} \).
-\begin{equation*}
-  \itol{A} \rightarrow \itol{B} \quad \text{is trivial if} \quad \itol{B} \subseteq \itol{A}
-\end{equation*}
-
-\subsubsection{Non-Trivial Dependencies}
-
-A functional dependency \( \itol{A} \rightarrow \itol{B} \) is said to be a \emph{non-trivial} functional dependency if \( \itol{B} \) is \emph{not} a subset of \( \itol{A} \)\@.
-\begin{equation*}
-  \itol{A} \rightarrow \itol{B} \quad \text{is non-trivial if} \quad \itol{B} \nsubseteq \itol{A}
-\end{equation*}
-
-\subsubsection{Completely Non-Trivial Dependencies}
-
-A functional dependency \( \itol{A} \rightarrow \itol{B} \) is said to be a \emph{completely non-trivial} functional dependency if \( \itol{A} \) and \( \itol{B} \) are disjoint, i.e.\ they share no common attributes --- their intersection is the empty set \( \varnothing \).
-\begin{equation*}
-  \itol{A} \rightarrow \itol{B} \quad \text{is completely non-trivial if} \quad \itol{A} \cap \itol{B} = \varnothing
-\end{equation*}
-
-\subsection{Rules of Functional Dependencies}
-
-\subsubsection{The Splitting Rule}
-
-The \emph{splitting rule} states that if
-\begin{equation*}
-  \itol{A} \rightarrow b_1, b_2, \ldots, b_n
-\end{equation*}
-then it follows that
-\begin{equation*}
-  \itol{A} \rightarrow b_1, \quad \itol{A} \rightarrow b_2, \quad \ldots, \quad \itol{A} \rightarrow b_n
-\end{equation*}
-
-\subsubsection{The Combining Rule}
-
-The \emph{combining rule} states that if
-\begin{equation*}
-  \itol{A} \rightarrow b_1, \quad \itol{A} \rightarrow b_2, \quad \ldots, \quad \itol{A} \rightarrow b_n
-\end{equation*}
-then it follows that
-\begin{equation*}
-  \itol{A} \rightarrow b_1, b_2, \ldots, b_n
-\end{equation*}
-
-\subsubsection{The Transitive Rule}
-
-The \emph{transitive rule} states that if
-\begin{equation*}
-  \itol{A} \rightarrow \itol{B} \quad \text{and} \quad \itol{B} \rightarrow \itol{C}
-\end{equation*}
-then it follows that
-\begin{equation*}
-  \itol{A} \rightarrow \itol{C}
-\end{equation*}
-
-\subsubsection{Trivial Dependency Rules}
-
-If \( \itol{A} \rightarrow \itol{B} \) is a trivial dependency, then \( \itol{A} \) functionally determines the union of \( \itol{A} \) and \( \itol{B} \)\@.
-\begin{equation*}
-  \itol{B} \subseteq \itol{A} \implies \itol{A} \rightarrow \itol{A} \cup \itol{B}
-\end{equation*}
-
-If \( \itol{A} \rightarrow \itol{B} \) is a trivial dependency, then \( \itol{A} \) functionally determines the intersection of \( \itol{A} \) and \( \itol{B} \).
-\begin{equation*}
-  \itol{B} \subseteq \itol{A} \implies \itol{A} \rightarrow \itol{A} \cap \itol{B}
-\end{equation*}
-
-\subsection{Closure of Attributes}
-
-The closure of a set of attributes \( \itol{A} \) in a relation is the set of all attributes \( \itol{B} \) such that \( \itol{A} \rightarrow \itol{B} \)\@.
-The closure of \( \itol{A} \) is denoted by \( \itol{A}^{+} \)\@.
-Since \( \itol{A} \) is a subset of itself, the closure of \( \itol{A} \) contains \( \itol{A} \)\@.
-\begin{equation*}
-  \itol{A} \subseteq \itol{A} \quad \therefore \quad \itol{A}^{+} \supseteq \itol{A}
-\end{equation*}
-
-In order to determine the closure of \( \itol{A} \),
+The corresponding search algorithm is as follows.
 \begin{enumerate}
-  \item define a result set \( \itol{A}^{+} \) that initially contains all attributes of \( \itol{A} \), then
-  \item repeating until there is no further change,
-  \begin{enumerate}
-    \item for all the (remaining) functional dependencies of the form \( \itol{X} \rightarrow \itol{Y} \),
-    \begin{enumerate}
-      \item if \( \itol{X} \) is a subset of the result set \( \itol{A}^{+} \),
-      \begin{enumerate}
-        \item add \( \itol{Y} \) to the result set \( \itol{A}^{+} \), and
-        \item remove the functional dependency from the list of functional dependencies that remain to be considered.
-      \end{enumerate}
-    \end{enumerate}
-  \end{enumerate}
-  \item Finally, the result set \( \itol{A}^{+} \) should be the closure of \( \itol{A} \)\@.
+  \item Starting at the root node, and
+  \item repeating until an empty tree is reached,
+  \begin{itemize}
+    \item if the value of the current node is less than the search value, move to the root node of the left subtree,
+    \item otherwise, if the value of the current node is greater than the search value, move to the root node of the right subtree,
+    \item otherwise, the value of the current node must be equal to the search value; the search value has been found.
+    Return the current position.
+  \end{itemize}
+  \item Return \( -1 \).
 \end{enumerate}
 
-\subsection{Closure, Keys and Decomposition}
+The efficiency of this algorithm is determined by the number of comparisons it performs.
+After each comparison, the search moves to the next subtree.
+Thus, the maximum number of comparisons is the height of the tree.
+If the tree is balanced, or nearly balanced, both the average and worst-case time complexities are \( \bigo{\log n} \).
+If the tree becomes highly imbalanced, the worst-case time complexity increases to \( \bigo{n} \).
 
-To check whether \( \itol{A} \) is a key of a relation \( R \), it is necessary to compute the closure of \( \itol{A} \)\@.
-If the closure contains all attributes of \( R \), then \( \itol{A} \) is a key of \( R \)\@.
+Formulae to check whether an element \texttt{x} is in a BST \texttt{t} can be defined as follows.
+\begin{lstlisting}[mathescape=true]
+isIn(x, t) = $ \begin{cases}
+  \texttt{true} & \text{// if x occurs in t} \\
+  \texttt{false} & \text{// otherwise}
+\end{cases} $
 
-In general, to find all the keys for a relation \( R \), it is necessary to compute the closure of each and every subset \( \itol{A} \) of the attributes of \( R \)\@.
-If the closure of the subset \( \itol{A} \) contains all attributes of \( R \), then \( \itol{A} \) is a key of \( R \)\@.
-The problem can be simplified by noting that a superset of a key is itself a key.
-Therefore, if a key \( \itol{A} \) is found, all supersets of \( \itol{A} \) can be marked as keys without having to compute their closures.
+isIn(x, $ \square $) = false
+isIn(x, Fork(y, left, right))
+    = (x == y)
+      || ((x < y) && isIn(x, left))
+      || ((x > y) && isIn(x, right))
+\end{lstlisting}
 
-The purpose of decomposition is to find a minimal set of completely non-trivial functional dependencies such that all functional dependencies that hold on the original relation can be derived from this set.
+\subsubsection{Insertion}
+
+The insertion algorithm proceeds in a similar fashion to the search algorithm.
+Thus, it has the same time complexities.
+Instead of returning a position, the new element is inserted in the correct position.
+The action to perform if the insertion element already exists in the tree is determined by the precise problem specification.
+The resulting tree is a sorted binary tree (a BST).
+After many items are inserted into a BST, it is likely to be imbalanced.
+To maintain the efficiency of the BST, efficient balancing algorithms must be considered.
+
+Assuming that the tree is to be left unchanged if it already contains the element to be inserted, insertion formulae can be defined as follows.
+\begin{lstlisting}[mathescape=true]
+insert(x, $ \square $) = Fork(x, $ \square $, $ \square $)
+insert(x, Fork(y, left, right))
+    = $ \begin{cases}
+      \text{Fork(x, left, right)} & \text{// if x == y} \\
+      \text{Fork(y, insert(x, left), right)} & \text{// if x < y} \\
+      \text{Fork(y, left, insert(x, right))} & \text{// if x > y}
+    \end{cases} $
+\end{lstlisting}
+
+\subsubsection{Deletion}
+
+There are several cases to consider for the deletion algorithm.
+\begin{itemize}
+  \item If the element to delete is a leaf node (with two empty subtrees), the node is simply replaced with an empty subtree.
+  The node is found in \( \bigo{\log n} \) time, and deleted in one step.
+  The overall time complexity is \( \bigo{\log n} \).
+  \item If the element to delete is an internal node with only one empty subtree, the node is replaced by the non-empty subtree.
+  This also has \( \bigo{\log n} \) time complexity.
+  \item If the element to delete is an internal node with no empty subtrees, the node must be replaced in a manner than maintains the order of the tree.
+  One option is to replace the target node with the left-most leaf~node of the right subtree (the leaf node is removed from the subtree).
+  Alternatively, the target node could be replaced with the right-most leaf~node of the left subtree.
+  This also has \( \bigo{\log n} \) time complexity.
+\end{itemize}
+
+The deletion algorithm has the same time complexities as the search and insertion algorithms.
+After many elements are removed from a BST, it is likely to be imbalanced.
+
+Assuming that the tree is to be left unchanged if it already contains the element to be deleted, deletion formulae can be defined as follows.
+\begin{lstlisting}[mathescape=true]
+delete(x, $ \square $) = $ \square $
+
+delete(x, Fork(y, left, right))
+    = $ \begin{cases}
+      \text{Fork(y, delete(x, left), right)} & \text{// if x < y} \\
+      \text{Fork(y, left, delete(x, right))} & \text{// if x > y}
+    \end{cases} $
+
+delete(x, Fork(x, left, right))
+    = Fork(smallest(right), left, delete(smallest(right), right))
+    // if both left and right are non-empty
+
+delete(x, Fork(x, $ \square $, right)) = right
+delete(x, Fork(x, left, $ \square $)) = left
+delete(x, Fork(x, $ \square $, $ \square $)) = $ \square $
+\end{lstlisting}
+
+\subsubsection{Summary}
+
+If the BST is balanced, or nearly balanced, the search, insertion and deletion algorithms all have a time complexity of \( \bigo{\log n} \) in both the worst case and on average.
+If the BST is highly imbalanced, the algorithms have a worst-case time complexity of \( \bigo{n} \).
+
+After many insertions or deletions, a BST is likely to be imbalanced.
+To maintain the efficiency of the BST, efficient balancing algorithms must be considered.

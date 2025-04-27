@@ -1,213 +1,128 @@
-\subsection{The Benefits of Databases}
+\subsection{Array Search Specification}
 
-Databases provide
+An \emph{array~search} acts on a data structure known as an \emph{array}.
+The \emph{imprecise} \emph{problem specification} is to find an element in the array.
+Two algorithms that implement array~search are linear~search (slower) and binary~search (faster).
+The \emph{precise} problem specification is as follows.
+
+Given an array \( a \) of integers, and an integer \( x \), find an integer \( i \) such that
 \begin{itemize}
-  \item concurrent access for a large number of users,
-  \item data integrity,
-  \item high throughput and availability,
-  \item fault tolerance, and
-  \item the ability to store large amounts of structured data.
+  \item if there is no index \( j \) such that the \( j \)th element of \( a \) is equal to \( x \), then \( i \) is \( -1 \),
+  \item otherwise, the \( i \)th element of \( a \) is equal to \( x \).
 \end{itemize}
 
-In addition, databases provide abstraction, and allow for the use of bespoke methods of access, such as structured query language (SQL).
-Many database management systems (DBMS) make use of variations of SQL.
+This specification is ambiguous in that it does not specify which index to return should there be more than one index \( i \) such that the \( i \)th element of \( a \) is equal to \( x \).
+In this case, any such \( i \) may be returned.
 
-\subsection{SQL Tables}
+\subsection{Algorithms}
 
-SQL operates on \emph{tables}.
-A table is the implementation of a \emph{relation} --- a theoretical construct with certain properties.
-The rows of a table correspond to the \emph{tuples} of a relation.
-The columns of a table correspond the the \emph{attributes} of a relation.
+An algorithm implements a problem specification.
+The process for developing an algorithm is as follows.
+\begin{enumerate}
+  \item Determine the purpose and requirements of the algorithm.
+  This is the problem specification.
+  \item Develop a solution to the problem.
+  This is the algorithm.
+  \item Check that the algorithm satisfies the specification.
+  This can be done through
+  \begin{itemize}
+    \item testing (imperfect), or
+    \item writing a proof or convincing argument.
+  \end{itemize}
+  \item If necessary, determine the run-time complexity or space complexity of the algorithm.
+  If the algorithm is particularly complex, a better solution may be required.
+\end{enumerate}
 
-A relation is a \emph{set} of tuples.
-Although a table may contain duplicate rows, a relation may not contain duplicate tuples.
-Additionally, the way in which data is stored implies that tables are ordered in some way.
-This is not the case for relations.
+Testing is an imperfect method of checking whether an algorithm satisfies its specification.
+It can only find bugs; it cannot prove that there are no bugs at all.
+Sometimes, an algorithm is so simple that it is immediately clear that it satisfies its specification.
 
-\begin{table}[htp]
-  \centering
-  \caption*{A table in SQL.}
-  \begin{tabular}{rlr}
-    \toprule
-    id & name & mark \\
-    \midrule
-    1 & Alice & 90 \\
-    2 & Bob & 80 \\
-    3 & Charlotte & 70 \\
-    4 & David & 60 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\subsection{Linear Search Algorithm}
 
-The schema of a table is the logical definition of a table.
-This includes the number of columns (attributes), their names and the type of information they store.
+The linear~search algorithm handles the ambiguity of the array~search specification by selecting the first result index \( i \) from left to right.
 
-\subsection{Normalisation}
+\begin{lstlisting}[
+  float = !htp,
+  title = {The linear array search algorithm.},
+  frame = single,
+  numbers = left,
+  showlines = true,
+  language = {Java},
+  ]
+int linearSearch(int[] a, int x) {
+    for(int i = 0; i < a.length, i++) {
+        if (a[i] == x) {
+            return i;
+        }
+    }
 
-Storing all information in a single table leads to redundancy.
-This can be avoided by \emph{normalising} tables --- linking information across multiple tables.
+    return -1;
+}
+\end{lstlisting}
 
-\subsection{Constraints}
+For an array of length \( n \), if \( x \) is not found by the algorithm, it will loop \( n \) times.
+This is the worst-case scenario.
+Its worst-case run-time complexity is \( \bigo{n} \) --- linear complexity.
+This means that the run time is linearly proportional to the length of the array.
+On average, the number of loop iterations is
+\begin{equation*}
+  \frac{1 + 2 + \ldots + n}{n} = \frac{n + 1}{2}
+\end{equation*}
 
-SQL provides a way of imposing certain rules (\emph{constraints}) to tables.
-Constraints include \texttt{NOT~NULL}, \texttt{UNIQUE}, \texttt{PRIMARY~KEY}, \texttt{FOREIGN~KEY}, \texttt{CHECK}, \texttt{DEFAULT} and \texttt{INDEX}.
-A \emph{primary~key} is a set of attributes that uniquely identify a row.
+When \( n \) is small, and the search is performed infrequently, linear~search is sufficient.
+When \( n \) is large, or the search is performed frequently, the linear run-time complexity is problematic and a more efficient algorithm is necessary.
 
-\subsection{Database Design Goals}
+\subsection{Binary Search Algorithm}
 
-A database design must
-\begin{itemize}
-  \item work within predefined business rules,
-  \item ensure data consistency and throughput,
-  \item contain all the required data, and
-  \item ensure that the data remains readable despite these constraints.
-\end{itemize}
+The binary~search algorithm assumes that the array is sorted.
+This is known as a \emph{precondition} of the algorithm.
+The algorithm works by halving (approximately) the search space on each iteration.
+It is analogous to searching for a word in a dictionary.
 
-Examples of business rules include
-\begin{itemize}
-  \item an order must be placed before it is shipped, and
-  \item the timetables for a single student must not overlap.
-\end{itemize}
-These business rules can be implemented using database constraints.
-Having the correct information with the required constraints constitutes \emph{data~quality}, which is critical to the smooth operation of an organisation.
-Nevertheless, having all this required information in a database is not so useful if the database is too slow.
-A balance must be struck between business requirements and throughput.
+\begin{lstlisting}[
+  float = !htp,
+  title = {The binary array search algorithm.},
+  frame = single,
+  numbers = left,
+  showlines = true,
+  language = {Java},
+]
+int binarySearch(int[] a, int x) {
+    assert(isSorted(a));
 
-\subsection{Entity Relationship Diagrams}
+    int left = 0
+    int right = a.length - 1;
 
-\subsubsection{Crow's Feet Notation}
+    while (left <= right) {
+        int middle = (left + right) / 2;
 
-Entity relationship diagrams (ERDs) are a notation for database design.
-There is no standard for (ERDs), but one popular family of notation is \emph{Crow's~Feet Notation}.
+        if (a[middle] < x) {
+            left = middle + 1;
+        } else if (a[middle] > x) {
+            right = middle - 1;
+        } else {
+            return middle;
+        }
+    }
 
-\subsubsection{Entities and Relationships}
+    return -1;
+}
+\end{lstlisting}
 
-Commonly, an entity is denoted by a rectangle.
-An entity often represent nouns, such as objects or events.
-The relationship between two entities is written on a line connecting them.
-The relationship is usually a verb.
-Thus, ERDs correspond to natural language.
+Since the search space is halved on each iteration, the number of iterations in the worst-case scenario (when \( x \) is not found by the algorithm) is \( \log_{2} n \).
+Thus, its worst-case run-time complexity is \( \bigo{\log n} \) --- logarithmic complexity.
+Its average run-time complexity is also \( \bigo{\log n} \).
+This means that the run time is logarithmically proportional to the length of the array.
+Binary~search is quicker and more efficient than linear~search, but it is limited in that the array must be sorted before the algorithm can be applied.
 
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=0.75\textwidth]{unit-1/figures/er-diagram.jpg}
-  \caption*{An entity relationship diagram.}
-\end{figure}
+Since binary~search is more complex than linear~search, preconditions, \emph{invariants} and postconditions are used to prove its correctness.
+An invariant is a property of an object that remains unchanged after operations of a certain type are applied to the object.
+Usually, this is a condition that should hold at the beginning of each iteration of a loop.
+Assertions can be used to check these conditions when testing the algorithm.
 
-The attributes of an entity are listed within its rectangle.
-The primary key is underlined.
-
-Relationships are named associations between entities.
-Relationships provide associations in both directions.
-
-\subsubsection{Cardinality}
-
-\emph{Cardinality} provides a constraint on the number of instances of an entity that participate in a relationship.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=0.6\textwidth]{unit-1/figures/cardinality-notation.jpg}
-  \caption*{Cardinality notation.}
-\end{figure}
-
-\begin{table}[htp]
-  \centering
-  \caption*{Important cardinalities.}
-  \begin{tabular}{ll}
-    \toprule
-    Name & Value \\
-    \midrule
-    Mandatory & Minimum cardinality \( \geq 1 \) \\ [1ex]
-    Optional & Minimum cardinality \( = 0 \) \\ [1ex]
-    Functional & Minimum cardinality \( = 1 \) \\ [1ex]
-    \midrule
-    One-to-one (1--1) & Maximum cardinality \( = 1 \) in both directions \\ [1ex]
-    One-to-many (1--M) & Maximum cardinality \( = 1 \) in one direction \\
-    & Maximum cardinality \( > 1 \) in the other direction \\ [1ex]
-    Many-to-many (M--N) & Maximum cardinality \( > 1 \) in both directions \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Foreign Keys and Weak Entities}
-
-Relationships are translated to \emph{foreign~keys} in tables, except in the case of many-to-many relationships.
-
-\emph{Weak~entities} are entities that do not have their own primary~key.
-They must borrow attributes from other entities to form part or all of their primary~key.
-Weak~entities are represented by rounded rectangles.
-An underlined attribute of a weak~entity is not its primary key.
-It is a key that is combined with the keys of one or more entities to provide a primary key.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=0.75\textwidth]{unit-1/figures/weak-entity.jpg}
-  \caption*{A weak entity relationship.}
-\end{figure}
-
-An \emph{identification relationship} provides one component of the primary key of a weak entity.
-An \emph{identifying dependency} consists of one or more identification relationships that provide all of the primary key.
-Sometimes an identification relationship and an identifying dependency are equivalent.
-
-\subsubsection{Many-to-Many Relationships}
-
-In a many-to-many relationship, the relationship itself can have attributes.
-Theses attributes are listed below the relationship with an arrow pointing to them.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=0.75\textwidth]{unit-1/figures/relationship-attribute.jpg}
-  \caption*{An attribute of a many-to-many relationship.}
-\end{figure}
-
-A many-to-many relationship can be replaced by an associate entity and two one-to-many relationships.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=\textwidth]{unit-1/figures/associate-entity.jpg}
-  \caption*{An associate entity in a many-to-many relationship.}
-\end{figure}
-
-An associate entity provides additional information about the many-to-many relationship it implements.
-By necessity, an associate entity is a weak entity that borrows the attributes of its primary~key from the entities between which it provides an association.
-
-\subsubsection{\texorpdfstring{\( N \)}{N}-Way Relationships}
-
-Sometimes --- though very rarely --- more than two entities are related to each other.
-For example, a module may be taught by multiple lecturers, and a student is given a mark from each lecturer.
-If it is only necessary to relate pairs of entities, such as which lecturers teach which modules, or which students are enrolled in which modules, an \( N \)-way relationship is not required.
-If, however, it is necessary to store information associated with more than two entities, such as the mark given to a student from a lecturer for one section of a module, an \( N \)-way relationship is required.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=\textwidth]{unit-1/figures/n-way-relationship.jpg}
-  \caption*{An \( N \)-way relationship.}
-\end{figure}
-
-\subsubsection{Self-Identifying Relationships}
-
-A \emph{self-identifying} (also \emph{self-referencing} or \emph{reflexive}) relationship is a relationship between an entity and itself.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=0.4\textwidth]{unit-1/figures/self-identifying-relationship.jpg}
-  \caption*{A self-identifying relationship.}
-\end{figure}
-
-All hierarchies are self-identifying relationships.
-\begin{itemize}
-  \item Biological classifications
-  \item Organisational hierarchies
-  \item Topic categories
-\end{itemize}
-
-In order to determine the cardinality of a self-identifying relationship, it is useful to draw an \emph{instance~diagram}.
-
-\begin{figure}[htp]
-  \centering
-  \includegraphics[width=0.3\textwidth]{unit-1/figures/instance-diagram.jpg}
-  \caption*{An instance diagram of a self-identifying relationship.}
-\end{figure}
-
-A self-identifying relationship may require an associate entity, depending on its cardinality.
-All self-identifying relationships can be translated to tables if many-to-many relationships are replaced by associate entities and one-to-many relationships.
+\begin{description}
+  \item[assertion] a condition that is \emph{expected} to hold at a point in an algorithm
+  \item[precondition] a condition that is \emph{assumed} to hold at the beginning of an algorithm
+  \item[postcondition] a condition that is \emph{guaranteed} to hold at the end of an algorithm
+  \item[invariant] a condition that \emph{should} hold at the beginning of each iteration of a loop
+\end{description}

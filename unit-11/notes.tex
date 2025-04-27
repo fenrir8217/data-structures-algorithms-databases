@@ -1,0 +1,292 @@
+% \documentclass{article}
+\subsection{Class Test \#1}
+
+\subsubsection{Question 1: Formula Representation}
+Consider the following tree structure:
+\begin{center}
+\begin{forest}
+for tree={
+    l sep=0.6cm,
+    s sep=1.0cm,
+    parent anchor=south,
+    child anchor=north,
+    edge={draw},
+    draw, circle, minimum size=1.2em
+}
+[45
+    [20
+        [15
+            [\null, draw, minimum size=1em, shape=rectangle]
+            [16
+                [\null, draw, minimum size=1em, shape=rectangle]
+                [\null, draw, minimum size=1em, shape=rectangle]
+            ]
+        ]
+        [27
+            [\null, draw, minimum size=1em, shape=rectangle]
+            [\null, draw, minimum size=1em, shape=rectangle]
+        ]
+    ]
+    [55
+        [\null, draw, rectangle, minimum size=1em]
+        [60
+            [\null, draw, minimum size=1em, shape=rectangle]
+            [\null, draw, minimum size=1em, shape=rectangle]
+        ]
+    ]
+]
+\end{forest}
+\end{center}
+\begin{enumerate}
+    \item[(a)] Create a corresponding formula representation. \hfill [1 mark]
+    \item[(b)] Does this structure qualify as an AVL tree? If it is, justify your answer by showing the balance factor. Otherwise, write down how to change it into an AVL tree. \hfill [1 mark]
+    \item[(c)] Show the inorder and preorder traversals for the given tree. \hfill [1 mark]
+\end{enumerate}
+
+\subsection*{Question 2: BST}
+Consider the following binary tree (which is not a binary search tree):
+\begin{center}
+\begin{forest}
+for tree={
+    l sep=0.5cm,
+    s sep=0.6cm,
+    parent anchor=south,
+    child anchor=north,
+    edge={draw},
+    draw, circle, minimum size=1.2em
+}
+[31
+    [55
+        [81
+            [13
+                [6
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                ]
+                [50
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                ]
+            ]
+            [68
+                [25
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                ]
+                [20
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                ]
+            ]
+        ]
+        [\null, draw, minimum size=1em, shape=rectangle]
+    ]
+    [46
+        [14
+            [1
+                [\null, draw, minimum size=1em, shape=rectangle]
+                [\null, draw, minimum size=1em, shape=rectangle]
+            ]
+            [42
+                [34
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                ]
+                [88
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                    [\null, draw, minimum size=1em, shape=rectangle]
+                ]
+            ]
+        ]
+        [\null, draw, rectangle, minimum size=1em]
+    ]
+]
+\end{forest}
+\end{center}
+\begin{enumerate}
+    \item[(a)] Using the same elements as in the given tree, draw a binary search tree such that it is perfectly balanced. \hfill [3 marks]
+    \item[(b)] Draw a binary search tree with the same elements as in the given tree above, in such a way that there is at least one node with a balance factor of $-2$. Indicate the node and explain why it has this balance factor. \hfill [4 marks]
+\end{enumerate}
+
+\subsection*{Question 3: AVL Tree}
+
+\subsubsection*{Part 1}
+Consider the tree structure below:
+\begin{center}
+\begin{forest}
+for tree={
+    l sep=0.6cm, % vertical squashing
+    s sep=2cm,   % horizontal spreading
+    parent anchor=south,
+    child anchor=north,
+    edge={draw},
+    draw, circle, minimum size=1.2em, % Default: normal nodes as circles
+}
+[25
+    [20
+        [10
+            [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+            [15
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+            ]
+        ]
+        [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+    ]
+    [50
+        [30
+            [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+            [45
+                [35
+                    [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+                    [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+                ]
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+            ]
+        ]
+        [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+    ]
+]
+\end{forest}
+\end{center}
+
+\begin{enumerate}
+    \item[(a)] The current tree structure violates the AVL balance condition. However, it is possible to restore the AVL property by adding extra nodes without changing the height of the tree. In this scenario, what is the minimum number of nodes required to achieve this balance? Provide justification for your answer. \hfill [1 mark]
+    \item[(b)] Without changing the height of the tree, what is the maximum number of Insert operations that can be performed? Consider all the possible scenarios and justify your answer. \hfill [1 mark]
+\end{enumerate}
+
+\subsubsection*{Part 2}
+
+Consider the AVL tree below:
+\begin{center}
+\begin{forest}
+for tree={
+    minimum size=1.2em,
+    l sep=0.6cm,
+    s sep=1.0cm,
+    parent anchor=south,
+    child anchor=north,
+    edge={draw},
+}
+% Define styles
+[50, draw, circle
+    [25, draw, circle
+        [20, draw, circle
+            [10, draw, circle
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+                [\null, draw, minimum size=1em, shape=rectangle]  % Right of 15
+            ]
+            [\null, draw, minimum size=1em, shape=rectangle]  % Empty left of 10
+        ]
+        [30, draw, circle 
+            [\null, draw, minimum size=1em, shape=rectangle]  % Left of 15
+            [\null, draw, minimum size=1em, shape=rectangle]  % Right of 15
+        ]
+    ]
+    [75, draw, circle
+        [60, draw, circle
+            [55, draw, circle
+                [53, draw, circle
+                    [\null, draw, minimum size=1em, shape=rectangle]  % Left of 35
+                    [\null, draw, minimum size=1em, shape=rectangle]  % Right of 35
+                ]
+                [\null, draw, minimum size=1em, shape=rectangle]  % Right of 45
+            ]
+            [65,draw,circle
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 30
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 30
+            ]
+        ]
+        [80, draw, minimum size=1em, shape=rectangle
+            [\null, draw, minimum size=1em, shape=rectangle]  % Right of 45
+            [90, draw, circle
+                [\null, draw, minimum size=1em, shape=rectangle]  % Left of 35
+                [\null, draw, minimum size=1em, shape=rectangle]  % Right of 35
+            ]
+        ]  % Right of 50
+    ]
+]
+\end{forest}
+\end{center}
+Delete node 30 from it and rebalance if necessary. Draw the final result together with the intermediate steps. \hfill [4 marks]
+
+\section*{Question 4: Binary Search and Merge Sort}
+
+Consider the following Python code:
+
+\begin{lstlisting}
+def merge_sort(arr):
+    """
+    Sorts the array using merge sort.
+    """
+    if len(arr) <= 1:
+        return arr
+    if len(arr) % 2 == 1:
+        mid = len(arr) // 2
+    else:
+        mid = (len(arr) + 1) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    """
+    Merges two sorted lists into one sorted list.
+    """
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+def binary_search(arr, target):
+    """
+    Performs binary search on a sorted array.
+    Returns the index of the target if found; otherwise, returns -1.
+    """
+    low = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1
+
+if __name__ == '__main__':
+    # Input array and target value.
+    arr = [38, 27, 43, 3, 9, 82, 10]
+    target = 43
+
+    # Check if the array is already sorted; if not, sort it using merge sort.
+    if arr != sorted(arr):
+        sorted_arr = merge_sort(arr)
+    else:
+        sorted_arr = arr
+
+    print("Sorted array:", sorted_arr)
+
+    # Use binary search to find the index of the target value in the sorted array.
+    index = binary_search(sorted_arr, target)
+    if index != -1:
+        print(f"Element {target} found at index: {index}")
+    else:
+        print(f"Element {target} not found in the array.")
+\end{lstlisting}
+
+\begin{enumerate}
+    \item[(a)] What is the Space Complexity of the binary search function (from line 48 to line 63)? Justify your answer. \hfill [1 mark]
+    \item[(b)] Assuming the Time Complexity of \texttt{sorted(arr)} (at line 71) is $O(n)$. What is the overall Time Complexity of the main entry point of the above code (from line 65 to line 83)? Justify your answer.
+
+    \textit{HINT: The input array is defined at line 67.} \hfill [3 marks]
+\end{enumerate}
