@@ -32,7 +32,8 @@
 \usepackage[skip=\glueexpr\baselineskip\relax]{parskip} % Layout with zero \parindent non-zero \parskip
 \usepackage[onehalfspacing]{setspace} % Set space between lines % setspace must be loaded before hyperref
 \usepackage{titlesec} % Select alternative section titles
-
+\usepackage{xcolor}
+\usepackage{multicol} % Intermix single and multiple columns
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref} % Extensive support for hypertext in LaTeX % hyperref loaded by pdfx
 
 % Set list parameters (using enumitem package)
@@ -156,4 +157,10 @@
 
 \input{unit-11/unassessed-1.tex}
 \input{unit-11/unassessed-3.tex}
+\pagebreak
+\section{AIML Exercises}{AIML Practices}
+\input{unit-11/mock.tex}
+\pagebreak
+\input{unit-11/past-24.tex}
+\input{unit-11/exercise-10.tex}
 \end{document}

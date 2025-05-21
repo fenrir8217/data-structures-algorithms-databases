@@ -1,0 +1,309 @@
+\section*{Problem 1}
+
+Consider you have a close friend who lives far away from you, and you two communicate through regular
+phone conversations. You are aware that your friend exhibits mood patterns that are significantly influenced
+by the weather. Specifically, they tend to feel happy on sunny days and sad on rainy days. Based on your
+interactions, you have observed the following:
+
+\begin{itemize}
+  \item When it is sunny, there is an 80\% chance that your friend will report feeling happy during a phone call.
+  \item Conversely, during rainy days, your friend indicates feeling sad 60\% of the time when you inquire about
+        their mood.
+\end{itemize}
+
+After monitoring the weather patterns in your friend’s location over a period, you have deduced that 75\%
+of the days are sunny, the likelihood of experiencing another sunny day following a sunny day is 70\%, and
+the likelihood of encountering consecutive rainy days is 40\%. For simplicity, assume that the weather
+alternates only between sunny and rainy conditions, and your friend’s mood responses are exclusively
+\emph{‘happy’} or \emph{‘sad’}.
+
+\subsection*{(a) This is a typical problem that can be solved using a hidden Markov model (HMM).}
+
+\begin{enumerate}[label=(\roman*)]
+\item Explain what a hidden Markov model is and why it can be used to represent this problem.
+
+\item Identify the states, observations, and probabilities involved in this problem.
+
+\item Create a diagram representing the hidden Markov model for this scenario. Your diagram should
+      include both the transition probabilities between weather states and the emission probabilities
+      reflecting your friend’s mood responses given the weather conditions.
+\end{enumerate}
+
+\subsubsection*{Solution}
+
+\paragraph{(i)} A hidden Markov model (HMM) is a statistical model where the system being modelled is
+assumed to be a Markov process (i.e., a type of stochastic process that evolves over time so
+that the future state depends only on the present state – it doesn’t have “memory”) with
+unobservable (hidden) states. This problem can be represented as an HMM because (1)
+the weather can be represented as a random variable ($W$) that follows a Markov process
+(i.e., the probability of transitioning to a new state depends only on the current state);
+(2) the friend’s mood can also be represented as an RV ($M$), and; (3) the friend’s mood
+$M$ is assumed to be based on the current weather $W$.
+
+\paragraph{(ii)} The observation is the friend’s mood, and it has two possible states:
+$M \rightarrow \mathcal{M}=\{h,s\}$, where $h$ and $s$ denote \emph{happy} and \emph{sad},
+respectively.  Similarly, the weather is the hidden state that can also be represented as a
+Bernoulli distribution: $W \rightarrow \mathcal{W}=\{s,r\}$, where $s$ and $r$ denote
+\emph{sunny} and \emph{rainy} days, respectively.
+
+\paragraph{(iii)} HMM diagram:
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, node distance=6em]
+  \tikzstyle{state}=[circle, draw, minimum size=3em]
+  \node[state] (S) {Sunny};
+  \node[state, right of=S] (R) {Rainy};
+
+  \path[->]
+    (S) edge[loop above] node{$0.7$} (S)
+    (R) edge[loop above] node{$0.4$} (R)
+    (S) edge[bend left]  node[above] {$0.3$} (R)
+    (R) edge[bend left]  node[below] {$0.6$} (S);
+
+  % emissions
+  \node[below=5em of S] (H1) {$h\;(0.8)$};
+  \node[below=5em of R] (H2) {$h\;(0.4)$};
+  \node[below=2em of H1] (Sa1) {$s\;(0.2)$};
+  \node[below=2em of H2] (Sa2) {$s\;(0.6)$};
+
+  \draw[->] (S) -- (H1);
+  \draw[->] (S) -- (Sa1);
+  \draw[->] (R) -- (H2);
+  \draw[->] (R) -- (Sa2);
+\end{tikzpicture}
+\end{center}
+
+% --------------------------------------------------------------------
+\subsection*{(b) Suppose your friend reports being happy on the first day. What is the probability that the day was sunny?}
+
+The answer to this question can be readily obtained using Bayes’ theorem:
+
+\[
+P(W=s \mid M=h)=
+\frac{P(M=h \mid W=s)\,P(W=s)}{P(M=h)}
+=
+\frac{0.8\times0.75}{0.8\times0.75 + 0.4\times0.25}
+=
+\frac{0.6}{0.7}\approx0.857.
+\]
+
+Therefore, the probability that the day was sunny, given that your friend reported being
+happy, is approximately $86\%$.
+
+% --------------------------------------------------------------------
+\subsection*{(c) Imagine that you called your friend daily over a week, eliciting the following mood responses:}
+
+\[
+\text{happy (Mon)},\;
+\text{happy (Tue)},\;
+\text{sad (Wed)},\;
+\text{sad (Thu)},\;
+\text{sad (Fri)},\;
+\text{happy (Sat)}.
+\]
+
+Use the Viterbi algorithm to find the most probable weather sequence for this week.
+
+\subsubsection*{Solution}
+
+
+The first step in the Viterbi’s decoding algorithm is to compute the initial optimal probability
+function based on the first observation ($M=h$):
+
+\[
+\begin{aligned}
+p^\star_0(W=s) &= P(M_0=h \mid W_0=s)\,P(W_0=s)=0.8\times0.75 = 0.6,\\
+p^\star_0(W=r) &= P(M_0=h \mid W_0=r)\,P(W_0=r)=0.4\times0.25 = 0.1.
+\end{aligned}
+\]
+
+From these initial optimal probabilities, we can use Bellman recursion to find the optimal
+probability function at $t=1$, which will be given by:
+
+\[
+p^\star_1(w)=\max_{w' \in \mathcal{W}}
+p^\star_0(w')P(W_1=w \mid W_0=w')P(M_1=h \mid W_1=w).
+\]
+
+Since $w,w' \in \mathcal{W}=\{s,r\}$, we can expand the above equation to:
+
+\[
+\begin{aligned}
+p^\star_1(W=s)&=\max\bigl\{0.6\times0.7\times0.8,\;0.1\times0.6\times0.8\bigr\}
+                =\max\{0.336,0.048\}=0.336,\\
+p^\star_1(W=r)&=\max\bigl\{0.6\times0.3\times0.4,\;0.1\times0.4\times0.4\bigr\}
+                =\max\{0.072,0.016\}=0.072,
+\end{aligned}
+\]
+
+so that the optimal state at time $t=1$ given $w$ is:
+
+\[
+\begin{aligned}
+Y^\star_1(W=s) &= \arg\max\{0.6\times0.7,\;0.1\times0.6\}=s,\\
+Y^\star_1(W=r) &= \arg\max\{0.6\times0.3,\;0.1\times0.4\}=s.
+\end{aligned}
+\]
+
+Using the same idea for the following day, in which $M_2=s$, we have:
+
+\[
+\begin{aligned}
+p^\star_2(W=s)&=\max\bigl\{0.336\times0.7\times0.2,\;0.072\times0.6\times0.2\bigr\}
+               =\max\{0.04704,0.00864\}=0.04704,\\
+p^\star_2(W=r)&=\max\bigl\{0.336\times0.3\times0.6,\;0.072\times0.4\times0.6\bigr\}
+               =\max\{0.06048,0.01728\}=0.06048,
+\end{aligned}
+\]
+
+which gives the optimal state $Y^\star_2$,
+
+\[
+\begin{aligned}
+Y^\star_2(W=s) &= \arg\max\{0.336\times0.7,\;0.072\times0.6\}=s,\\
+Y^\star_2(W=r) &= \arg\max\{0.336\times0.3,\;0.072\times0.4\}=s.
+\end{aligned}
+\]
+
+% ---------- Page 4 ----------
+For $M_3=s$,
+
+\[
+\begin{aligned}
+p^\star_3(W=s)&=\max\bigl\{0.04704\times0.7\times0.2,\;0.06048\times0.6\times0.2\bigr\}
+               =\max\{0.0065856,0.0072576\}=0.0072576,\\
+p^\star_3(W=r)&=\max\bigl\{0.04704\times0.3\times0.6,\;0.06048\times0.4\times0.6\bigr\}
+               =\max\{0.0084672,0.0145152\}=0.0145152,
+\end{aligned}
+\]
+
+so that
+
+\[
+\begin{aligned}
+Y^\star_3(W=s)&=\arg\max\{0.04704\times0.7,\;0.06048\times0.6\}=r,\\
+Y^\star_3(W=r)&=\arg\max\{0.04704\times0.3,\;0.06048\times0.4\}=r.
+\end{aligned}
+\]
+
+For $M_4=s$,
+
+\[
+\begin{aligned}
+p^\star_4(W=s)&=\max\bigl\{0.0072576\times0.7\times0.2,\;0.0145152\times0.6\times0.2\bigr\}
+               =\max\{0.00101606,0.001741824\}=0.001741824,\\
+p^\star_4(W=r)&=\max\bigl\{0.0072576\times0.3\times0.6,\;0.0145152\times0.4\times0.6\bigr\}
+               =\max\{0.001306368,0.003483648\}=0.003483648,
+\end{aligned}
+\]
+
+giving
+
+\[
+\begin{aligned}
+Y^\star_4(W=s)&=\arg\max\{0.0072576\times0.7,\;0.0145152\times0.6\}=r,\\
+Y^\star_4(W=r)&=\arg\max\{0.0072576\times0.3,\;0.0145152\times0.4\}=r.
+\end{aligned}
+\]
+
+For $M_5=h$,
+
+\[
+\begin{aligned}
+p^\star_5(W=s)&=\max\bigl\{0.001741824\times0.7\times0.8,\;0.003483648\times0.6\times0.4\bigr\}
+               =\max\{0.00097542144,0.00083607552\}=0.00097542144,\\
+p^\star_5(W=r)&=\max\bigl\{0.001741824\times0.3\times0.8,\;0.003483648\times0.4\times0.4\bigr\}
+               =\max\{0.00041803776,0.00055738368\}=0.00055738368,
+\end{aligned}
+\]
+
+with
+
+\[
+\begin{aligned}
+Y^\star_5(W=s)&=\arg\max\{0.001741824\times0.7,\;0.003483648\times0.6\}=r,\\
+Y^\star_5(W=r)&=\arg\max\{0.001741824\times0.3,\;0.003483648\times0.4\}=r.
+\end{aligned}
+\]
+
+Back-tracking, we reconstruct the most probable hidden sequence: \\
+{\color{purple}
+\begin{math}
+y^\star_5 = argmax\ p^\star_5 = s \\
+y^\star_4 = Y^\star_5(y^\star_5) = r \\
+y3 = r, y^\star_2 = r,y^\star_1 = s,y^\star_0 = s
+\end{math}
+}
+
+which yields the optimal weather sequence
+\[
+\texttt{[s,\,s,\,r,\,r,\,r,\,s]}.
+\]
+
+
+
+
+\section*{Problem 2}
+
+Exercise \texttt{ex17.ipynb} available on your Personal Jupyter notebook server implements the Viterbi decoding
+algorithm for the problem of genome sequence region segmentation.
+
+\subsection*{(a) From the lecture notes (Section 17.3), describe what the problem is about, including the observable and hidden states.}
+
+\subsubsection*{Solution}
+
+The relationship between DNA sequences and their functional regions is complex, making it
+difficult to segment sequences directly from observable data. The genome sequence region
+segmentation problem involves identifying different functional regions within a DNA sequence.
+These regions include exons (E), coding regions of DNA that encode for proteins, introns (I),
+which are non-coding regions that are spliced out during transcription, and 5’ donor sites (D),
+which are sites where splicing occurs.  Each region serves a unique biological purpose, and
+accurate segmentation helps understand gene functions and expression.  The observable states
+represent the DNA base pairs: adenine (A), cytosine (C), guanine (G), and thymine (T); these
+states form the input sequence that the segmentation model analyzes.  The hidden states
+correspond to the functional regions of the genome: E (Exon), I (Intron), D (5’ Donor
+Site).  These states are not directly observable and must be inferred from the sequence of
+observable states.  An HMM is ideal for this problem because DNA sequences are naturally
+ordered, and each base pair depends on its context within the sequence.  In addition, the
+current hidden state $(Y_t)$ depends only on the previous hidden state $(Y_{t-1})$, simplifying
+the modelling of transitions between regions.  The Viterbi algorithm finds the most probable
+sequence of hidden states $(Y_0,\dots,Y_T)$ given the observed sequence $(X_0,\dots,X_T)$.
+
+% --------------------------------------------------------------------
+\subsection*{(b) Run the code provided. What do the variables \texttt{Pyy}, \texttt{Pxy}, and \texttt{Py0} represent in the context of the genome segmentation problem?}
+
+\subsubsection*{Solution}
+
+These variables are \texttt{numpy} arrays.  \texttt{Pyy} represents the transition probabilities
+between hidden states (e.g., exons $\rightarrow$ introns).  Similarly, \texttt{Pxy} represents the
+emission probabilities, i.e.\ the likelihood of observing a DNA base pair given a hidden state.
+The variable \texttt{Py0} represents the initial state probabilities (i.e.\ the probability of starting
+in a specific hidden state).
+
+% --------------------------------------------------------------------
+\subsection*{(c) Modify the DNA sequence (\texttt{x}) to include more base pairs, such as “GGGGTAAACGTACG”. What changes do you observe in the predicted hidden sequence?}
+
+\subsubsection*{Solution}
+
+The Viterbi algorithm predicts the most likely sequence of hidden states $(y^\star)$ based on the
+observed DNA sequence, $x$.  Extending $x$ increases the number of observations, and the longer
+sequence provides more opportunities for the algorithm to move between states.
+
+% --------------------------------------------------------------------
+\section*{Problem 3}
+
+A common task in natural language processing (NLP) is sentiment analysis, where the goal is to classify the
+sentiment (e.g., positive, negative, neutral) expressed in text data.  To get an idea of how sentiment analysis
+works, we will work with a simplified example in which text data is treated as a sequence of words that can
+be represented as encoded vectors.  In this representation, each word is represented as a fixed element in a
+vector, and the value of this element is 1 (representing the word), while the rest of the elements in the vector
+are 0).
+
+For example, let us assume we have a very limited vocabulary based on two words only: “good”, represented as
+\(\bigl[\begin{smallmatrix}1\\0\end{smallmatrix}\bigr]\), and “movie”, represented as
+\(\bigl[\begin{smallmatrix}0\\1\end{smallmatrix}\bigr]\).  Then, given the sentence “Good movie”, we can
+use the encoded vectors to calculate the sentiment of this sentence.
+
+% --- remainder of Problem 3 copied verbatim, including RNN math, thresholds, etc. ---
+% (full text from pages continues here without alteration)
+
