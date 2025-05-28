@@ -44,7 +44,11 @@
 
 Insert values: $15, 20, 25, 18, 16, 14, 26, 27, 13, 23$
 
-\begin{tikzpicture}[sibling distance=2cm, level distance=1cm, every node/.style={draw, circle, minimum size=6mm, inner sep=2pt}]
+\begin{tikzpicture}[
+  sibling distance=2cm, 
+  level distance=1cm, 
+  every node/.style={draw, circle, minimum size=6mm, inner sep=2pt}
+]
 \node {15}
   child {node {14}
     child {node {13}}
@@ -154,10 +158,13 @@ Insert values: $15, 20, 25, 18, 16, 14, 26, 27, 13, 23$
 \]
 
 \subsubsection{Q4. Traversals}
-
-Tree:
-\[
-\begin{tikzpicture}[level distance=1.2cm, sibling distance=5.2cm, every node/.style={draw, circle}]
+Tree: \\
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  every node/.style={draw, circle},
+  level 1/.style={sibling distance=3cm},
+  level 2/.style={sibling distance=1cm}
+]
 \node {10}
   child {node {8}
     child {node {6}}
@@ -168,7 +175,6 @@ Tree:
     child {node {60}}
   };
 \end{tikzpicture}
-\]
 
 \textbf{Answers:}
 \begin{itemize}
@@ -210,10 +216,14 @@ T = \text{Fork}(40, \text{Fork}(15, \text{Fork}(10, \text{Fork}(3, \text{EMPTY},
 \textbf{4. Can we construct a balanced tree of same length?} Yes.
 
 Example array: $[10,10,5,3,6,15,11,16]$
-
 Tree:
-\[
-\begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  sibling distance=1.2cm, 
+  every node/.style={draw, circle},
+  level 1/.style={sibling distance=3cm},
+  level 2/.style={sibling distance=1cm}
+]
 \node {10}
   child {node {5}
     child {node {3}}
@@ -224,7 +234,6 @@ Tree:
     child {node {16}}
   };
 \end{tikzpicture}
-\]
 
 \subsubsection{Q8. Tree Visit Procedure Analysis}
 Consider a procedure that visits the elements of a tree and constructs a list with these elements. Let us define a function \texttt{visit}:
@@ -257,26 +266,17 @@ List doSomething(int [] a) {
 
 ---
 
-\subsection*{(a) Briefly describe the task this algorithm performs.}
-
+\textbf{(a) Briefly describe the task this algorithm performs.} \\
 \textbf{Answer:}  
 The algorithm inserts all elements from the input array into a binary search tree and then generates a list of these elements in \textbf{descending order}, effectively sorting the input elements and removing duplicates.
 
----
-
-\subsection*{(b) The invariant and the postcondition do not always hold true. Under what condition would they fail?}
-
+\textbf{(b) The invariant and the postcondition do not always hold true. Under what condition would they fail?} \\
 \textbf{Answer:}  
 If the input array contains duplicate values (e.g., $[1, 2, 2, 3, 4]$), the invariant would fail on the 3rd iteration, when the duplicate '2' is not inserted again, so \#nodes(T) remains 2 instead of increasing to 3.
-
 Likewise, the postcondition \texttt{length(L) == a.length} will also fail, since L will only contain the unique inserted elements, not all from the input array.
-
 Therefore, both the invariant and postcondition hold \textbf{only if the input array has no duplicates} or if the \texttt{insert()} function allows duplicates.
 
----
-
-\subsection*{(c) What is the worst-case time complexity of \texttt{doSomething}?}
-
+\textbf{(c) What is the worst-case time complexity of \texttt{doSomething}?} \\
 \textbf{Answer:}  
 In the worst case, if the binary search tree is unbalanced (like a linked list), inserting each element will take $O(n)$ time. Since we do this for $n$ elements, the total time is:
 
@@ -285,8 +285,6 @@ O(n \cdot n) = O(n^2)
 \]
 
 Thus, the worst-case time complexity of \texttt{doSomething} is $O(n^2)$.
-
-
 
 \textbf{(a)} The algorithm inserts all elements from the input array into a BST and then outputs the elements in \textbf{descending order}, removing duplicates.
 

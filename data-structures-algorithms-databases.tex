@@ -20,7 +20,7 @@
 
 % Set default teletype font to Latin Modern Teletype
 \renewcommand{\ttdefault}{lmtt}
-
+\usepackage{bookmark}
 \usepackage{amsmath} % AMS mathematical facilities for LaTeX
 \usepackage{amssymb} % TeX fonts from the American Mathematical Society
 \usepackage{booktabs} % Publication quality tables in LaTeX
@@ -34,6 +34,12 @@
 \usepackage{titlesec} % Select alternative section titles
 \usepackage{xcolor}
 \usepackage{multicol} % Intermix single and multiple columns
+\usepackage{longtable} % Intermix single and multiple columns
+
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{tikz}
+
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref} % Extensive support for hypertext in LaTeX % hyperref loaded by pdfx
 
 % Set list parameters (using enumitem package)
@@ -133,6 +139,9 @@
 \section{Hash Tables}
 \input{unit-5/notes.tex}
 
+\pagebreak
+\input{unit-5/notes-2.tex}
+
 \section{Introduction and Entity Relationships}
 \input{unit-6/notes.tex}
 
@@ -146,21 +155,28 @@
 \section{Database Application Design}
 \input{unit-10/notes.tex}
 
-
-\section{Practices}
+\section{DSAD-Practices}
 \input{unit-11/notes-1.tex}
 \input{unit-11/notes-2.tex}
 \input{unit-11/notes-3.tex}
 \input{unit-11/notes-10.tex}
-\input{unit-11/notes.tex}
+\input{unit-11/notes-11.tex}
+
+\input{unit-11/class-tests.tex}
 
 
 \input{unit-11/unassessed-1.tex}
+\input{unit-11/unassessed-2.tex}
 \input{unit-11/unassessed-3.tex}
 \pagebreak
-\section{AIML Exercises}{AIML Practices}
-\input{unit-11/mock.tex}
+\input{unit-11/past-paper.tex}
+
+\input{unit-11/avl-code.tex}
+
 \pagebreak
-\input{unit-11/past-24.tex}
-\input{unit-11/exercise-10.tex}
+\section{AIML Exercises}{AIML Practices}
+\input{aiml_exercises/mock.tex}
+\pagebreak
+\input{aiml_exercises/past-24.tex}
+\input{aiml_exercises/exercise-10.tex}
 \end{document}

@@ -1,5 +1,4 @@
 \subsection{Graph Representations}
-
 \subsubsection{Graphs}
 
 A \emph{graph} comprises a finite set of vertices and edges between them.
@@ -78,11 +77,15 @@ Since the steps are repeated up~to \( n \)~times, the overall time complexity of
 
 When the graph is represented using adjacency lists, the algorithm updates all the neighbours of a different vertex on each iteration.
 Over all the iterations, a total of \( m \) vertices are updated.
-Thus, the update steps contribute a time complexity of \( \bigo{m} \).
-The search and update steps can be made more efficient using a \emph{minimum~priority queue} in which the priority of a vertex~\( v \) is the distance~\( d_{v} \).
-Using a \emph{binary~heap} implementation for the binary queue, the overall time complexity of the algorithm using adjacency lists is \( \bigo{\left( n + m \right) \log n} \).
-Using a \emph{Fibonacci~heap} implementation, the time complexity is \( \bigo{\left( n \log n \right) + m} \).
+Thus, the update steps contribute a time complexity of \( \bigo{m} \). \\
+The search and update steps can be made more efficient using a \emph{minimum~priority queue} in which the priority of a vertex~\( v \) is the distance~\( d_{v} \). \\
+Using a \emph{binary~heap} implementation for the binary queue, the overall time complexity of the algorithm using adjacency lists is \( \bigo{\left( n + m \right) \log n} \). \\
+Using a \emph{Fibonacci~heap} implementation, the time complexity is \( \bigo{\left( n \log n \right) + m} \). \\
 
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=15cm]{unit-4/figures/02.png}
+\end{figure}
 If the graph is dense (the number of edges \( m \) is approximately \( n^{2} \)), using adjacency lists with a binary heap has time complexity \( \bigo{n^{2} \log n} \), which is slower than using an adjacency matrix.
 Using adjacency lists with a Fibonacci heap, however, has a better time complexity of \( \bigo{n^{2}} \) for a dense graph.
 If the graph is sparse, using adjacency lists with either type of heap is faster than using an adjacency matrix.
@@ -95,6 +98,13 @@ Considering only undirected and connected graphs, a \emph{spanning~tree} is a mi
 The selection of edges is minimal if it does not form a cycle in the graph.
 A \emph{minimum spanning~tree} is a spanning tree for which the sum of the weights of its edges is minimal.
 
+A Spanning Tree is a subgraph of a given connected, undirected graph that includes all vertices and is itself a tree (which means no cycles).
+
+Minimum Spanning Tree (MST) is a spanning tree with the minimum total edge weight.
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=15cm]{unit-4/figures/01.png}
+\end{figure}
 \subsubsection{Jarn\'{i}k-Prim Algorithm}
 
 The \emph{Jarn\'{i}k-Prim algorithm} forms a minimum spanning tree of a graph by iteratively extending the tree with an edge that connects a vertex that is not yet part of the tree and has a minimal weight.
@@ -126,3 +136,11 @@ The time complexity of the Jarn\'{i}k-Prim algorithm is the same as that of Dijk
 Using an adjacency matrix, it is \( \bigo{n^{2}} \).
 Using adjacency lists with a binary heap, it is \( \bigo{\left( n + m \right) \log n)} \).
 Using adjacency lists with a Fibonacci heap, it is \( \bigo{\left( n \log n \right) + m} \).
+
+\begin{center}
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=15cm]{unit-4/figures/MST_Example.png}
+%   \caption*{The structure of a packet frame.}
+\end{figure}
+\end{center}

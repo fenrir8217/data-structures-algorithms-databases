@@ -1,4 +1,6 @@
+
 \subsection{Manipulation of a Sorted Array}
+\usetikzlibrary{arrows.meta, positioning, shapes.multipart}
 
 To delete an element from a sorted array
 \begin{enumerate}
@@ -54,6 +56,222 @@ height($ \square $) = 0
 height(Fork(x, left, right))
     = 1 + max(height(left), height(right))
 \end{lstlisting}
+
+
+% \documentclass{article}
+% \usepackage{amsmath, amssymb}
+% \usepackage{tikz}
+\usetikzlibrary{trees}
+
+\subsection{Tree Data Structure}
+
+\textbf{Definition:}
+
+A tree is a non-linear data structure that simulates a hierarchical structure, with a set of connected nodes.
+\begin{itemize}
+    \item Has a single root node from which all other nodes branch out.
+    \item Cannot contain ``loops''.
+\end{itemize}
+
+\textbf{Terminologies:}
+\begin{itemize}
+    \item Nodes: elements of the tree.
+    \item Edges: connections between nodes.
+    \item Leaves: nodes without children.
+    \item Height/Depth: the longest path from the root node to a leaf node.
+\end{itemize}
+
+\begin{tikzpicture}[
+  level distance=2cm,
+  sibling distance=2.8cm,
+  every node/.style={circle, draw, fill=gray!10, minimum size=1cm, font=\small},
+  edge from parent/.style={draw, -{Stealth}},
+  level 1/.style={sibling distance=5cm},
+  level 2/.style={sibling distance=2cm},
+  level 3/.style={sibling distance=2cm}
+]
+
+% Root and first level
+\node {}
+  child {node {}
+    child {node {}
+      child {node {}}
+      child {node {}}
+    }
+    child {node{Empty}}
+  }
+  child {node {}
+    child {node {}}
+    child {node {}}
+    child {node {}}
+  }
+;
+\end{tikzpicture}
+\begin{itemize}
+    \item Nodes: 9
+    \item Edges: 8
+    \item Leaves: 5
+    \item Height: 4
+\end{itemize}
+
+\begin{itemize}
+    \item Nodes: 1
+    \item Edges: 0
+    \item Leaves: 1
+    \item Height: 1
+\end{itemize}
+
+\textbf{Different Type of Trees} \\
+
+\begin{itemize}
+    \item \textbf{Binary Tree:} Each node has up to two children.
+    \item \textbf{Binary Search Tree (BST):} A binary tree where left child contains only nodes with values less than the parent node, and right child contains only nodes with values greater. 
+    \item \textbf{Balanced Tree:} A binary search tree where the height of the left and right subtrees of any node differ by no more than one.
+\end{itemize}
+
+\textbf{Building Binary Trees – Expression Representation} \\
+\begin{itemize}
+    \item Rule 1: An empty tree is represented as: \texttt{Empty} or \( \emptyset \).
+    \item Rule 2: Given a label \( X \) and two trees \( L \) and \( R \), we can build a new tree: \texttt{Fork(X, L, R)}.
+\end{itemize}
+
+\textbf{Examples:}
+\[
+\text{Fork(3, Empty, Empty)} = 
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  sibling distance=1.5cm,
+  every node/.style={circle, draw, fill=gray!10, minimum size=1cm, font=\small}
+  ]
+\node {3};
+\end{tikzpicture}
+\]
+
+\[
+\text{Fork(4, Fork(3, Empty, Empty), Empty)} = 
+\begin{tikzpicture}[
+  level distance=1.2cm, sibling distance=1.5cm
+]
+\node {4}
+    child {node {3}}
+    child[missing];
+\end{tikzpicture}
+\]
+
+\textbf{More Examples} \\
+
+\begin{align*}
+t_1 &= \text{Fork(7, Empty, Empty)} \\
+t_2 &= \text{Fork(13, t1, t1)} \\
+t_3 &= \text{Fork(17, t2, Fork(3, Empty, t1))}
+\end{align*}
+
+\[
+\text{Diagram for } t_3 = 
+\begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm]
+\node {17}
+    child {
+        node {13}
+            child {node {7}}
+            child {node {7}}
+    }
+    child {
+        node {3}
+            child[missing]
+            child {node {7}}
+    };
+\end{tikzpicture}
+\]
+
+\textbf{Formulas} 
+
+\begin{math}
+\# \text{nodes}(Empty) = 0 \\
+\# \text{nodes}(Fork(X, L, R)) = 1 + \# \text{nodes}(L) + \# \text{nodes}(R) 
+\text{height}(Empty) = 0 \\
+\text{height}(Fork(X, L, R)) = 1 + \max(\text{height}(L), \text{height}(R)) \\
+\text{isPB}(Empty) = \text{true} \\
+\text{isPB}(Fork(X, L, R)) = \text{height}(L) == \text{height}(R) \land \text{isPB}(L) \land \text{isPB}(R) \\
+\end{math}
+
+\textbf{\# nodes of a Perfectly Balanced Tree (Height 4)} \\
+
+\begin{tikzpicture}[
+  level distance=2cm,
+  sibling distance=2.8cm,
+  every node/.style={circle, draw, fill=gray!10, minimum size=1cm, font=\small},
+  result node/.style={circle, draw, fill=orange!50, font=\small},
+  edge from parent/.style={draw, -{Stealth}},
+  level 1/.style={sibling distance=5cm},
+  level 2/.style={sibling distance=3cm},
+  level 3/.style={sibling distance=2cm}
+]
+
+% Root and first level
+\node {}
+  child {node {}
+    child {node {}
+      child {node {}}
+      child {node {}}
+    }
+    child {node {}
+      child {node {}}
+      child {node {}}
+    }
+  }
+  child {node {}
+    child {node {}
+      child {node {}}
+      child {node {}}
+    }
+    child {node {}
+      child {node {}}
+      child {node {}}
+    }
+  }
+;
+% Edge weights as raw text (not using node)
+% \draw (0,0)  node[draw=none, fill=none, text=blue] {\small 0,0};
+% \draw (-10,-10)  node[draw=none, fill=none, text=blue] {\small -5,-5};
+% Labels for n levels
+\node[anchor=west,draw=none,fill=none] at (7,0) {Level 1: $node  = 2^0$};
+\node[anchor=west,draw=none,fill=none] at (7,-2) {Level 2: $node  = 2^1$};
+\node[anchor=west,draw=none,fill=none] at (7,-4) {Level 3: $node  = 2^2$};
+\node[anchor=west,draw=none,fill=none] at (7,-6) {Level 4: $node  = 2^3$};
+\end{tikzpicture}
+
+\begin{align*}
+\text{Total nodes} &= 1 + 2 + 4 + 8 = 15 = 2^4 - 1 = 2^{\text{height}} - 1
+\end{align*}
+
+\[
+\# \text{nodes} = 2^0 + 2^1 + 2^2 + \cdots + 2^{\text{height}-1} = 2^{\text{height}} - 1
+\]
+\[
+\text{height} = \log_2(\# \text{nodes} + 1)
+\]
+
+\textbf{E.g.} \#nodes = 7,800,000,000 (approx. world population)
+
+\[
+\text{height} \approx 32
+\]
+
+A large balanced, or nearly balanced, tree has small height!
+
+\textbf{Previous Class Test Question} \\
+Create a corresponding formula representation:
+\[
+T = \text{Fork}(40, \text{Fork}(15, \text{Fork}(10, \text{Fork}(3, \text{Empty}, \text{Empty}), \text{Empty}), \text{Fork}(30, \text{Empty}, \text{Fork}(36, \text{Empty}, \text{Empty}))), \text{Fork}(50, \text{Fork}(51, \text{Empty}, \text{Empty}), \text{Empty}))
+\]
+
+
+
+
+
+
+
+
 
 \subsection{Perfectly Balanced Binary Tree}
 
@@ -220,3 +438,19 @@ If the BST is highly imbalanced, the algorithms have a worst-case time complexit
 
 After many insertions or deletions, a BST is likely to be imbalanced.
 To maintain the efficiency of the BST, efficient balancing algorithms must be considered.
+
+\begin{center}
+  \begin{figure}[!htbp]
+   \centering
+   \includegraphics[width=15cm]{unit-2/figures/t1.png}
+  %   \caption*{The structure of a packet frame.}
+  \end{figure}
+\end{center}
+
+\begin{center}
+  \begin{figure}[!htbp]
+   \centering
+   \includegraphics[width=15cm]{unit-2/figures/t2.png}
+  %   \caption*{The structure of a packet frame.}
+  \end{figure}
+\end{center}

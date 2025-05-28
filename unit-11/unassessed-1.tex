@@ -343,11 +343,11 @@ WHERE averages16.bc = averages17.bc;
 \end{verbatim}
 
 \paragraph{e. Courses with $\geq 100$ students both years}
-\begin{verbatim}
+\begin{lstlisting}
 SELECT averages16.bc AS "Banner Code",
        averages16.average AS "Average mark in 2016",
        averages17.average AS "Average mark in 2017"
 FROM (SELECT bc, AVG(mark) AS average FROM allmarks16 GROUP BY bc HAVING COUNT(*) >= 100) AS averages16,
      (SELECT bc, AVG(mark) AS average FROM allmarks17 GROUP BY bc HAVING COUNT(*) >= 100) AS averages17
 WHERE averages16.bc = averages17.bc;
-\end{verbatim}
+\end{lstlisting}

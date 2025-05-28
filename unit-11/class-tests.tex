@@ -1,6 +1,4 @@
-% \documentclass{article}
 \subsection{Class Test \#1}
-
 \subsubsection{Question 1: Formula Representation}
 Consider the following tree structure:
 \begin{center}
@@ -43,7 +41,7 @@ for tree={
     \item[(c)] Show the inorder and preorder traversals for the given tree. \hfill [1 mark]
 \end{enumerate}
 
-\subsection*{Question 2: BST}
+\subsubsection{Question 2: BST}
 Consider the following binary tree (which is not a binary search tree):
 \begin{center}
 \begin{forest}
@@ -108,9 +106,9 @@ for tree={
     \item[(b)] Draw a binary search tree with the same elements as in the given tree above, in such a way that there is at least one node with a balance factor of $-2$. Indicate the node and explain why it has this balance factor. \hfill [4 marks]
 \end{enumerate}
 
-\subsection*{Question 3: AVL Tree}
+\subsubsection{Question 3: AVL Tree}
 
-\subsubsection*{Part 1}
+\textbf{Part 1}\\
 Consider the tree structure below:
 \begin{center}
 \begin{forest}
@@ -155,7 +153,7 @@ for tree={
     \item[(b)] Without changing the height of the tree, what is the maximum number of Insert operations that can be performed? Consider all the possible scenarios and justify your answer. \hfill [1 mark]
 \end{enumerate}
 
-\subsubsection*{Part 2}
+\textbf{Part 2} \\
 
 Consider the AVL tree below:
 \begin{center}
@@ -210,7 +208,7 @@ for tree={
 \end{center}
 Delete node 30 from it and rebalance if necessary. Draw the final result together with the intermediate steps. \hfill [4 marks]
 
-\section*{Question 4: Binary Search and Merge Sort}
+\subsubsection{Question 4: Binary Search and Merge Sort}
 
 Consider the following Python code:
 
@@ -290,3 +288,162 @@ if __name__ == '__main__':
 
     \textit{HINT: The input array is defined at line 67.} \hfill [3 marks]
 \end{enumerate}
+
+\subsection{Class Test \#3}
+\subsubsection{Question 1: Entity-Relationship Modelling}
+
+A database system is needed customer account management of a stock brokerage house.\\
+The requirements are as follows: \\
+The stock brokerage house has customers that maintain investment accounts with them. Each account holds a certain number of ``securities" (shares, bonds etc.) and a cash balance. The securities are issued by authorised financial institutions and are identified by an ISIN (International Securities Identification Number). In addition, securities are also traded on a stock exchange which identifies them with a short ``trading symbol". For example, ``BARC" is the symbol assigned Barclays shares on the London Stock Exchange, while their ISIN is ``GB0031348658". The trading symbols are subject to change while the ISINs are fixed.\\
+Securities are traded upon request from the customers. A trade may be for either buying or selling a specified number of securities. The database should record each trade transaction, the date and time when it took place, the price, quantity of securities bought or sold, and the commission charged. \\
+Securities provide periodic income in the form of interest or dividends, which get credited to the account that holds the securities. Each income transaction should also be recorded along with the issuing institution and date. \\
+\textbf{(a)} Entity-Relationship Model with Design Decisions and Multiplicities \\
+\begin{center}
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=15cm]{unit-11/figures/ER-model.png}
+%   \caption*{The structure of a packet frame.}
+\end{figure}
+\end{center}
+The main entities are:
+\begin{itemize}
+  \item \texttt{customer}
+  \item \texttt{account}
+  \item \texttt{security}
+  \item \texttt{trade}
+  \item \texttt{income}
+\end{itemize}
+
+Optionally, we may also treat an institution as an entity. We may define subclass entities for buying and selling trade transactions.
+
+\bigskip
+
+% \noindent \textbf{TikZ ER Diagram:}
+% \begin{center}
+% \begin{tikzpicture}[node distance=2cm, every node/.style={draw, font=\small}]
+%   \node (customer) {Customer};
+%   \node[below of=customer] (account) {Account};
+%   \node[below of=account] (trade) {Trade};
+%   \node[right of=account, xshift=4cm] (security) {Security};
+%   \node[below of=security] (income) {Income};
+%   \node[above right=1.5cm and 2cm of security] (institution) {Institution};
+
+%   \draw (customer) -- node[left]{1..n} (account);
+%   \draw (account) -- node[below left]{1..n} (trade);
+%   \draw (account) -- node[below]{0..n} (security);
+%   \draw (trade) -- node[below]{1} (security);
+%   \draw (account) -- node[below right]{0..n} (income);
+%   \draw (income) -- node[right]{1} (security);
+%   \draw (security) -- node[right]{1} (institution);
+% \end{tikzpicture}
+% \end{center}
+
+
+
+Comments: Almost all the relationships use (1,1) for unique and (0,n) for ``many". For example, an account is owned by a single customer. So it participates in the ``owns" relationship exactly once. A customer may own many accounts.
+
+It is acceptable to use (1,n) for the ``many" multiplicity, but not ideal because it can cause problems in abnormal situations. For example, if the only account of a customer is to be deleted, then the customer would end up with fewer than 1 account.
+
+The many-to-many relationship between account and security is crucial.
+
+It is possible to treat income as a relationship, between account, security and institution. It results in the same tables as this design. \texttt{trade} can also be treated as a relationship (perhaps as two separate relations for ``buys" and ``sells").
+
+It is okay to omit the institution entirely as an entity, because nothing is needed about it other than its name.
+
+\textbf{(b) Logical Design with Relational Schemas} \\
+
+\begin{verbatim}
+customer(custid, lastname, firstname, address, email)
+account(accid, custid, cash)
+security(ISIN, symbol, name, institution)
+institution(name, address)
+acc_security(accid, security)
+trade(tradeid, accid, security, buy_or_sell, qty, date, time, price, commission)
+income(accid, security, date, type, amount)
+\end{verbatim}
+
+Comments:
+
+We need a table for every entity, except institution, which can possibly be treated as an attribute.
+
+Only one relationship, \texttt{holds}, needs a table, here written as \texttt{acc\_security}.
+
+All other relationships can be absorbed into entities.
+\begin{itemize}
+  \item \texttt{owns} absorbed into \texttt{account}.
+  \item \texttt{orders} and \texttt{for} absorbed into \texttt{trade}.
+  \item \texttt{issued by} absorbed into \texttt{security}.
+  \item \texttt{issued by} for \texttt{income} also absorbed into \texttt{income}.
+\end{itemize}
+
+Note that we do not store the quantity of security held in the account, because it would be redundant: it can be calculated by looking through the trades for that security. If a student stores the quantity as an attribute, make a comment on it, but do not deduct points.
+
+We keep a single table for \texttt{trade}, subsuming both the subclasses into it. It is also possible to have two separate tables for purchases and sales, or three tables: \texttt{trade}, \texttt{purchases} and \texttt{sales}.
+
+\textbf{(c) SQL \texttt{CREATE TABLE} Statements} \\
+
+\begin{verbatim}
+create table customer(
+  custid INTEGER not null unique primary key,
+  lastname VARCHAR(15) not null,
+  firstname VARCHAR(15) not null,
+  address VARCHAR(100) not null,
+  phone DECIMAL(15) not null,
+  email VARCHAR(100) not null
+);
+
+create table account(
+  accid INTEGER not null unique primary key,
+  custid INTEGER not null REFERENCES customer(custid),
+  cash DECIMAL(10,2) not null
+);
+
+create table security(
+  ISIN VARCHAR(10) not null unique,
+  symbol VARCHAR(4) not null unique,
+  name VARCHAR(100) not null,
+  institution VARCHAR(20) not null REFERENCES institution(name)
+);
+
+create table institution(
+  name VARCHAR(20) not null unique PRIMARY KEY,
+  address VARCHAR(100) not null
+);
+
+create table acc_security(
+  accid INTEGER not null REFERENCES account(accid) ON DELETE CASCADE,
+  security VARCHAR(10) not null REFERENCES security(ISIN),
+  primary key (accid, ISIN)
+);
+
+create table trade(
+  tradeid INTEGER not null PRIMARY KEY GENERATED ALWAYS BY IDENTITY,
+  accid INTEGER not null REFERENCES account(accid) ON DELETE CASCADE,
+  security VARCHAR(10) not null REFERENCES security(ISIN),
+  buy_or_sell SMALLINT,
+  qty INTEGER not null,
+  date DATE not null,
+  time TIME not null,
+  price DECIMAL(10,2) not null,
+  commission DECIMAL(4,2) not null
+);
+
+create table income(
+  accid INTEGER not null REFERENCES account(accid) ON DELETE CASCADE,
+  security VARCHAR(10) not null REFERENCES security(ISIN),
+  date DATE not null,
+  type CHAR not null,
+  amount DECIMAL(10,2) not null
+);
+\end{verbatim}
+
+Most of the \texttt{ON DELETE} constraints are not written in the solution above, which means that the default of \texttt{ON DELETE NO ACTION} would be used.
+
+It is possible to say \texttt{ON DELETE SET NULL} for the references to clients and workers, but then the \texttt{not null} constraint should be deleted.
+
+\texttt{ON DELETE CASCADE} is used for references to accounts, since when an account is deleted, all its transactions have no further relevance.
+
+\textbf{Note:} When an account is to be closed, all the securities held in it would need to be liquidated and the final cash balance would need to be paid out. Only after all this is done should the account be deleted, at which time its trades etc. can be deleted automatically.
+
+On the other hand, we are prohibiting a customer from being deleted when their account still exists. The account should be closed and deleted before the customer can be deleted.
+

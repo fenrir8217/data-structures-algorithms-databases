@@ -1,0 +1,407 @@
+\subsection{Unassessed Exercise Sheet 2}
+\subsubsection{Question 5: SQL continued (from Lecture Handout 1, paragraph 31)}
+\begin{enumerate}
+    \item[a.] Write a query which shows for every course the following information: name of course, number of students sitting the examination, average mark, highest mark, lowest mark, and standard deviation. The output table should be ordered alphabetically by course name.
+    \item[b.] Write a query to list all courses where enrolment has increased between 2016 and 2017.
+    \item[c.] Write a query which shows for every course the average mark plus the average mark of those students who achieved 40\% or more. Refer to the table “allmarks18” for exam results.
+    \item[d.] Which staff members are teaching in 2018?
+    \item[e.] For each course, what was the hard-failure rate in the examination according to “allmarks18”?
+    \item[f.] Which staff members are sharing an office with someone else?
+    \item[g.] Who taught the course(s) with the largest number of students in each of the years covered by the “lecturing” table? (Do \textbf{NOT} name the years explicitly in your query.)
+\end{enumerate}
+
+\begin{enumerate}
+    \item[a.] 
+\begin{lstlisting}
+SELECT courses.name,
+       count(DISTINCT student) AS students,
+       (avg(mark)) AS average,
+       max(mark) AS highest,
+       min(mark) AS lowest,
+       (stddev(mark)) AS "std dev"
+FROM courses, allmarks15
+WHERE courses.bc = allmarks15.bc
+GROUP BY courses.bc, courses.name
+ORDER BY courses.name;
+\end{lstlisting}
+
+    \item[b.]
+\begin{lstlisting}
+SELECT courses.name,
+       lect1.numbers as "2016 enrollment",
+       lect2.numbers as "2017 enrollment"
+FROM courses, lecturing AS lect1, lecturing AS lect2
+WHERE courses.cid = lect1.cid AND courses.cid = lect2.cid
+  AND lect1.year = 2016 AND lect2.year = 2017
+  AND lect1.numbers < lect2.numbers;
+\end{lstlisting}
+We are using two copies of the lecturing table, one for selecting the 2016 data and the other for selecting the 2017 data.
+
+    \item[c.]
+\begin{lstlisting}
+SELECT AllResults.bc AS "banner code",
+       AllResults.avgmark AS "average mark",
+       PassResults.avgmark AS "average pass mark"
+FROM (SELECT bc, avg(mark) AS avgmark
+      FROM allmarks18
+      GROUP BY bc) AS AllResults,
+     (SELECT bc, avg(mark) AS avgmark
+      FROM allmarks18
+      WHERE mark >= 40
+      GROUP BY bc) AS PassResults
+WHERE AllResults.bc = PassResults.bc;
+\end{lstlisting}
+A better solution can be written using OUTER JOIN which we study later in the course.
+
+    \item[d.] Which staff members are teaching in 2018?
+
+    \item[e.]
+\begin{lstlisting}
+SELECT AllResults.bc, Failures.count * 100 / AllResults.count || '%' AS "Percentage of failures"
+FROM (SELECT bc, COUNT(*) AS count
+      FROM allmarks18
+      GROUP BY bc) AS AllResults,
+     (SELECT bc, COUNT(*) AS count
+      FROM allmarks18
+      WHERE mark < 40
+      GROUP BY bc) AS Failures
+WHERE AllResults.bc = Failures.bc;
+\end{lstlisting}
+
+    \item[f.]
+\begin{lstlisting}
+SELECT DISTINCT staff.firstname, staff.lastname, staff.office
+FROM staff, staff AS other
+WHERE staff.sid <> other.sid AND staff.office = other.office
+ORDER BY staff.lastname;
+\end{lstlisting}
+
+    \item[g.]
+\begin{lstlisting}
+SELECT staff.firstname, staff.lastname, lecturing.year, lecturing.numbers
+FROM staff, lecturing
+WHERE staff.sid = lecturing.sid
+  AND (lecturing.year, lecturing.numbers) IN
+      (SELECT year, max(numbers)
+       FROM lecturing
+       GROUP BY year)
+ORDER BY year;
+\end{lstlisting}
+\end{enumerate}
+
+\subsubsection{Question 6: Basic relational algebra}
+
+Given below are two tables T1 and T2.
+
+\textbf{T1:}
+\begin{tabular}{ccccc}
+V & W & X & Y & Z \\
+\hline
+1 & a & x & 15 & e \\
+2 & a & x & 10 & f \\
+2 & b & x & 15 & g \\
+2 & b & y & 15 & h \\
+\end{tabular}
+
+\textbf{T2:}
+\begin{tabular}{cccc}
+C & D & X & W \\
+\hline
+4 & p & x & b \\
+5 & t & x & b \\
+6 & p & y & a \\
+7 & r & y & a \\
+\end{tabular}
+
+\begin{enumerate}
+    \item[a.] Calculate the result of the following relational algebra expression step by step:
+
+    \[
+    \sigma_{D=p}(\pi_{X,Y} (T1) \bowtie \pi_{X,D}(T2))
+    \]
+
+    \item[b.] Can you think of other ways of writing the above expression that produce the same result but involve less calculation?
+\end{enumerate}
+
+\textbf{a.} The tables generated in the calculation are:
+
+$\pi_{X,Y}(T_1)$:
+\begin{tabular}{|c|c|}
+\hline
+X&Y \\
+\hline
+x&15 \\
+x&10 \\
+x&15 \\
+y&15 \\
+\hline
+\end{tabular}
+
+$\pi_{X,D}(T_2)$:
+\begin{tabular}{|c|c|}
+\hline
+X&D \\
+\hline
+x&p \\
+x&t \\
+y&p \\
+y&r \\
+\hline
+\end{tabular}
+
+$R = \pi_{X,Y}(T_1) \bowtie \pi_{X,D}(T_2)$:
+\begin{tabular}{|c|c|c|}
+\hline
+X&Y& D  \\
+\hline
+x& 15&p \\
+x& 15&t \\
+x& 10&p \\
+x& 10&t \\
+x& 15&p \\
+x& 15&t \\
+y& 15&p \\
+y& 15&r \\
+\hline
+\end{tabular}
+
+$\sigma_{D=p}(R)$:
+\begin{tabular}{|c|c|c|}
+\hline
+X& Y&D \\
+x& 15&p \\
+x& 10&p \\
+x& 15&p \\
+y& 15&p \\
+\hline
+\end{tabular}
+
+\textbf{b.} The selection operator \(\sigma_{D=p}\) only depends on the table T2. So, applying it early can reduce the size of the tables involved. Hence, a more efficient expression is:
+\[
+\pi_{X,Y}(T1) \bowtie \pi_{X,D}(\sigma_{D=p}(T2))
+\]
+
+\subsubsection{Question 7: Understanding relational algebra}
+
+Explain each of the following relational algebra expressions in plain English, and translate them into SQL. (These refer to the sample database being used for the module.)
+
+\begin{enumerate}
+    \item[a.] \(\pi_{\text{lastname}}(\sigma_{\text{firstname}='John'}(\text{staff}))\)
+    \item[b.] \(\pi_{\text{lastname}}(\sigma_{\text{numbers}>100}(\text{staff} \bowtie \text{lecturing}))\)
+    \item[c.] \(\pi_{\text{name}}(\sigma_{\text{numbers}>100}(\text{lecturing} \bowtie \text{course})) - \pi_{\text{name}}(\sigma_{\text{level}=1}(\text{course}))\)
+    \item[d.] \(\pi_{\{\text{lastname}, \text{name}\}}(\sigma_{\text{year}=2013}(\text{staff} \bowtie \text{lecturing} \bowtie \text{course})) \cap \pi_{\{\text{lastname}, \text{name}\}}(\sigma_{\text{level}=2}(\text{staff} \bowtie \text{lecturing} \bowtie \text{course}))\)
+\end{enumerate}
+
+\begin{enumerate}
+    \item[a.] The last name of all those members of staff whose first name is ‘John’.
+
+\begin{verbatim}
+SELECT lastname
+FROM staff
+WHERE firstname = 'John';
+\end{verbatim}
+
+    \item[b.] The family name of all those members of staff who taught a course with more than 100 students (in any year).
+
+\begin{verbatim}
+SELECT DISTINCT lastname
+FROM staff, lecturing
+WHERE staff.sid = lecturing.sid AND numbers > 100;
+\end{verbatim}
+
+    \item[c.] The name of those courses, which had more than 100 students on them in at least one year, and which are not at level 1.
+
+\begin{verbatim}
+SELECT name
+FROM lecturing, course
+WHERE lecturing.cid = course.cid AND numbers > 100
+EXCEPT
+SELECT name
+FROM course
+WHERE level = 1;
+\end{verbatim}
+
+    \item[d.] List members of staff with the level 2 courses they taught in 1999.
+
+\begin{verbatim}
+SELECT lastname, name
+FROM staff AS s, lecturing AS l, course AS c
+WHERE s.sid = l.sid AND c.cid = l.cid AND year = 1999 AND level = 2;
+\end{verbatim}
+\end{enumerate}
+
+\subsubsection{Question 8: From SQL to relational algebra}
+
+Translate the following SQL queries into relational algebra.
+
+\begin{enumerate}
+    \item[a.] 
+\begin{verbatim}
+SELECT course.name
+FROM course, staff, lecturing
+WHERE lecturing.sid = staff.sid AND lecturing.cid = course.cid
+AND (lecturing.year = 2013 OR lecturing.year = 2014)
+AND staff.lastname = ’Jung’;
+\end{verbatim}
+
+    \item[b.] 
+\begin{verbatim}
+SELECT course.name
+FROM lecturing, course
+WHERE lecturing.cid = course.cid AND lecturing.year = 2001
+EXCEPT
+SELECT course.name
+FROM lecturing, course
+WHERE lecturing.cid = course.cid AND
+(lecturing.year = 2014 OR lecturing.year = 2013);
+\end{verbatim}
+
+    \item[c.] 
+\begin{verbatim}
+SELECT course.name
+FROM lecturing AS l1, lecturing AS l2, course
+WHERE l1.cid=l2.cid AND l1.cid=course.cid AND
+l1.sid=l2.sid AND
+l1.year=2013 AND l2.year=2014;
+\end{verbatim}
+
+    \item[d.] 
+\begin{verbatim}
+SELECT staff.lastname
+FROM staff
+WHERE staff.sid NOT IN (SELECT lecturing.sid
+FROM lecturing);
+\end{verbatim}
+\end{enumerate}
+
+\begin{enumerate}
+    \item[a.] \[
+    \pi_{\text{name}}(\sigma_{(\text{year}=1999 \vee \text{year}=2000) \wedge \text{lastname}='Jung'}(\text{staff} \bowtie \text{lecturing} \bowtie \text{course}))
+    \]
+
+    \item[b.] \[
+    \pi_{\text{name}}(\sigma_{\text{year}=2001}(\text{lecturing} \bowtie \text{course})) - \pi_{\text{name}}(\sigma_{\text{year}=2000 \vee \text{year}=1999}(\text{lecturing} \bowtie \text{course}))
+    \]
+
+    \item[c.] \[
+    \pi_{\text{name}}(\sigma_{\text{year}=1999 \wedge \text{year2}=2000}(\text{course} \bowtie \text{lecturing} \bowtie \rho_{\text{year} \rightarrow \text{year2}, \text{numbers} \rightarrow \text{numbers2}}(\text{lecturing})))
+    \]
+    (If you don’t rename the year and numbers attributes, then you will just get “lecturing” again from
+the natural join “lecturing $\bowtie$ lecturing”.) \\
+Alternatively, you can project just the cid column from the lecturing tables so that there is no need for
+renaming: 
+    \[
+    \pi_{\text{name}}(\text{course} \bowtie \pi_{\text{cid}}(\sigma_{\text{year}=1999}(\text{lecturing})) \bowtie \pi_{\text{cid}}(\sigma_{\text{year}=2000}(\text{lecturing})))
+    \]
+
+    \item[d.] \[
+    \pi_{\text{lastname}}((\pi_{\text{sid}}(\text{staff}) - \pi_{\text{sid}}(\text{lecturing})) \bowtie \text{staff})
+    \]
+\end{enumerate}
+\subsubsection{Question 9: Outer Joins}
+Given below are two tables T1 and T2. \\
+\textbf{T1:}
+\begin{tabular}{ccc}
+A & B & C \\
+\hline
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9 \\
+\end{tabular}
+
+\textbf{T2:}
+\begin{tabular}{ccc}
+B & C & D \\
+\hline
+2 & 3 & 10 \\
+2 & 3 & 11 \\
+2 & 6 & 10 \\
+6 & 7 & 12 \\
+\end{tabular}
+
+\begin{enumerate}
+    \item[a.] Calculate the (natural) inner join \(T1 \bowtie T2\) of the two tables.
+    \item[b.] Which tuples of T1 and T2 are dangling tuples in this calculation?
+    \item[c.] Calculate the (natural) outer join of the two tables. (This is denoted \(T1 \ \circ\!\!\bowtie\ T2\).)
+    \item[d.] Which tuples of the outer join are included if we are only interested in the left outer join?
+\end{enumerate}
+
+\textbf{a. Inner join \(T_1 \bowtie T_2\):} 
+\begin{tabular}{|c|c|c|c|}
+\hline
+A & B & C & d \\
+\hline
+1 & 2 & 3 & 10\\
+\hline
+1 & 2 & 3 & 11\\
+\hline
+\end{tabular}
+
+\textbf{b. Dangling tuples of:} 
+T1:
+\begin{tabular}{|c|c|c|}
+\hline
+4 & 5 & 6 \\
+\hline
+7 & 8 & 9 \\
+\hline
+\end{tabular}
+T2: 
+\begin{tabular}{|c|c|c|}
+\hline
+2 & 6 & 10 \\
+\hline
+6 & 7 & 12 \\
+\hline
+\end{tabular}
+
+\textbf{c. Outer join \(T_1 \overset{\circ}{\bowtie} T_2\):}
+\begin{tabular}{|c|c|c|c|}
+\hline
+A & B & C & D \\
+\hline
+1 & 2 & 3 & 10 \\
+\hline
+1 & 2 & 3 & 11 \\
+\hline
+4 & 5 & 6 & - \\
+\hline
+7 & 8 & 9 & - \\
+\hline
+- & 2 & 6 & 10 \\
+\hline
+- & 6 & 7 & 12 \\
+\hline
+\end{tabular}
+
+\textbf{d. Left outer join \(T_1 \overset{\circ}{\bowtie}_{Left} T_2\):}
+\begin{tabular}{|c|c|c|c|}
+\hline
+A& B& C& D \\
+\hline
+1& 2& 3& 10 \\
+1& 2& 3& 11 \\
+4& 5& 6& - \\
+7& 8& 9& - \\
+\hline
+\end{tabular}
+\subsubsection{Question 10: Equations of relational algebra (Optional)}
+Consider the following equations concerning the interaction between the relational algebra operators \(\cap\) (intersection), \(\bowtie\) (natural join), and \(\pi\) (projection). Which of them are always true, and which of them may fail? In the first case, your answer should consist of a justification for your belief. In the second case, you should indicate an example where the equation fails. Where an equation is true, say which of the two sides would generally evaluate faster in a database management system.
+
+\begin{enumerate}
+    \item[a.] \((R \cap S) \bowtie T = R \bowtie T \cap S \bowtie T\)
+    \item[b.] \(\pi_N (R \cap S) = \pi_N (R) \cap \pi_N (S)\), where \(N\) is some set of attribute names from the schema of \(R\) and \(S\)
+\end{enumerate}
+
+\begin{enumerate}
+    \item[a.] \((R \cap S) \bowtie T = (R \bowtie T) \cap (S \bowtie T)\)
+
+    \textbf{This is correct.} Justification: To find a tuple \(u \in R \cap S\) which can be joined with a tuple \(t \in T\), is the same as having that tuple \(u\) in both \(R\) and \(S\), so the joined tuple \(u \bowtie t\) would be in both \(R \bowtie T\) and in \(S \bowtie T\). Vice versa, a tuple in both \(R \bowtie T\) and \(S \bowtie T\) will be of the form \(r \bowtie t\) with \(r \in R\) and also of the form \(s \bowtie t\) with \(s \in S\). However, joining tuples together does not erase information, and since \(r \bowtie t = s \bowtie t\), we also have \(r = s\), and hence this tuple belongs to \(R \cap S\).
+
+    The left-hand side should evaluate faster, as there is only one (costly) natural join, and in addition, the relation \(R \cap S\) taking part in the natural join is smaller than both \(R\) and \(S\).
+
+    \item[b.] \(\pi_N (R \cap S) = \pi_N (R) \cap \pi_N (S)\)
+
+    \textbf{This may fail.} The intersection of \(R\) and \(S\) could be empty because tuples in \(R\) differ from tuples in \(S\) in at least one column; however, if some of the columns are dropped, then some of the differences may have been wiped out. So in general the left-hand side is contained in the right-hand side, but not vice versa.
+\end{enumerate}
+

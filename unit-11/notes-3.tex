@@ -22,52 +22,61 @@ Build an AVL tree with the following values: 15, 20, 24, 10, 13.
 
 \textbf{Answer:}
 
-\textbf{Step 1: Insert 15}
-\[
+\textbf{Step 1: Insert 15} \\
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
 \node {15};
 \end{tikzpicture}
-\]
 
-\textbf{Step 2: Insert 20}
-\[
+\textbf{Step 2: Insert 20} \\
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
 \node {15}
   child[missing]
   child {node {20}};
 \end{tikzpicture}
-\]
 
-\textbf{Step 3: Insert 24 → Left Rotation}
-\[
+\textbf{Step 3: Insert 24 → Left Rotation} \\
+\begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
+\node {15}
+  child [right] {node{20} 
+    child [right]{node{24}}
+  }
+  ;
+\end{tikzpicture}
+\quad
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
 \node {20}
   child {node {15}}
   child {node {24}};
 \end{tikzpicture}
-\]
 
-\textbf{Step 4: Insert 10}
-\[
+\textbf{Step 4: Insert 10} \\
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
 \node {20}
   child {
     node {15}
     child {node {10}}
-    child[missing]
+    child [missing]
   }
   child {node {24}};
 \end{tikzpicture}
-\]
 
-\textbf{Step 5: Insert 13 → LR Rotation}
-\[
+\textbf{Step 5: Insert 13 → LR Rotation} \\
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
 \node {20}
-  child {
-    node {15}
-    child {node {10}}
-    child {node {13}}
+  child {node {15}
+    child[left] {node {10}
+      child [right] {node {13}}
+    }
+  }
+  child {node {24}};
+\end{tikzpicture}
+\quad
+\begin{tikzpicture}[level distance=1.2cm, sibling distance=1.5cm, every node/.style={draw, circle}]
+\node {20}
+  child {node {15}
+    child[left] {node {13}
+      child [left] {node {10}}
+    }
   }
   child {node {24}};
 \end{tikzpicture}
@@ -81,14 +90,12 @@ Build an AVL tree with the following values: 15, 20, 24, 10, 13.
   }
   child {node {24}};
 \end{tikzpicture}
-\]
 
 \subsubsection{Q2. AVL Tree Deletion and Rotations}
 
 \textbf{Delete 53 (Right Rotation)}
 
 Initial tree:
-\[
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.3cm, every node/.style={draw, circle}]
 \node {14}
   child {
@@ -104,11 +111,39 @@ Initial tree:
     child[missing]
     child {node {53}}};
 \end{tikzpicture}
-\]
 
 After deleting 53 and applying right rotation:
-\[
+\begin{lstlisting}
+Left height = 3 (subtree rooted at 11)
+Right height = 1 (subtree rooted at 17)
+Balance factor = +2  left-heavy
+Left child 11 had:
+Balanced subtrees (so no double rotation needed)
+Therefore, this is a Left-Left Case and a right rotation at 14 is the correct rebalancing operation.
+Let me know if you'd like a visual step-by-step animation or code for this.
+\end{lstlisting}
+
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.3cm, every node/.style={draw, circle}]
+\node {14}
+  child {
+    node {11}
+    child {node {7}
+      child {node {4}}
+      child {node {8}}}
+    child {node {12}
+      child[missing]
+      child {node {13}}}
+  }
+  child {node {17}};
+\end{tikzpicture}
+\quad
+\quad
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  sibling distance=1.0cm, 
+  level 1/.style={sibling distance=2cm},
+  level 2/.style={sibling distance=1cm},
+  every node/.style={draw, circle}]
 \node {11}
   child {
     node {7}
@@ -117,36 +152,72 @@ After deleting 53 and applying right rotation:
   }
   child {
     node {14}
-    child {node {12}}
-    child {node {17}
-      child {node {13}}
-      child[missing]}
+    child {node {12}
+      child[right] {node {13}}
+    }
+    child {node {17}}
   };
 \end{tikzpicture}
-\]
 
 \vspace{0.5cm}
 \textbf{Delete 17 (LR Rotation)}
 
-Initial tree:
-\[
-\begin{tikzpicture}[level distance=1.2cm, sibling distance=1.3cm, every node/.style={draw, circle}]
+Initial tree: \\
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  sibling distance=1.0cm, 
+  level 1/.style={sibling distance=2cm},
+  level 2/.style={sibling distance=1cm},
+  every node/.style={draw, circle}]
 \node {12}
   child {
     node {7}
     child {node {4}}
-    child {node {8}}
+    child {node {8}
+      child[right]{node{9}}
+    }
   }
   child {
-    node {13}
-    child {node {9}}
-    child[missing]
+    node {17}
+    child[left] {node {13}}
   };
 \end{tikzpicture}
-\]
+After delete 17: \\
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  sibling distance=1.0cm, 
+  level 1/.style={sibling distance=2cm},
+  level 2/.style={sibling distance=1cm},
+  every node/.style={draw, circle}]
+\node {12}
+  child {
+    node {7}
+    child {node {4}}
+    child {node {8}
+      child[right]{node{9}}
+    }
+  }
+  child {node {13}};
+\end{tikzpicture}
+After LR rotation: \\
 
-After LR rotation:
-\[
+\begin{tikzpicture}[
+  level distance=1.2cm, 
+  sibling distance=1.0cm, 
+  level 1/.style={sibling distance=2cm},
+  level 2/.style={sibling distance=1cm},
+  every node/.style={draw, circle}]
+\node {12}
+  child {
+    node {8}
+    child {node {7}
+      child[left]{node{4}}
+    }
+    child {node {9}}
+  }
+  child {node {13}};
+\end{tikzpicture}
+\quad
 \begin{tikzpicture}[level distance=1.2cm, sibling distance=1.3cm, every node/.style={draw, circle}]
 \node {8}
   child {
@@ -160,7 +231,6 @@ After LR rotation:
     child {node {13}}
   };
 \end{tikzpicture}
-\]
 
 \subsubsection{Q3. Time Complexity of Algorithms}
 

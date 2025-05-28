@@ -1,0 +1,62 @@
+
+handout 2 - algerba
+Natural join This is the process which combines two tables into one, along the common attributes. Suppose we
+have two tables T1 and T2. We denote their natural join as:
+T1 ./ T2 :
+(We pronounce the symbol ./ as just “join”.) The resulting table will have columns for each attribute of T1
+and each attribute of T2. Attributes which are common to both are mentioned only once in T1 ./ T2. The
+rows of the resulting table are composed of a row of T1 together with a row of T2, provided that they have
+the same value in all common attributes.
+Basic SQL does not have a natural join operation but the operation can be simulated by listing T1 and T2
+in the “FROM” part, and by including the conditions “T_1.x=T_2.x” for every common attribute x in the
+“WHERE” part.1
+Other operators It is easy to add to this collection the usual set-theoretic operators [ (meaning “union”), \
+(meaning “intersection”), and 􀀀 (meaning “set difference”). They are only applicable if the tables involved
+share the same set of attributes. In order to describe the process of aggregation one needs yet further operators.
+Although these are being used to represent queries inside a database management system, we will not
+pursue this topic further.
+If you are interested in how PostgreSQL executes a query, then precede it with the keyword “EXPLAIN”.
+Instead of actually running the query, PostgreSQL will output a verbose form of the corresponding relational
+algebra expression.
+
+handout5-funtional
+81. Playing with functional dependencies. Once some functional dependencies have been postulated, others can
+be inferred to hold as well. Here are some rules for this:
+2
+Trivial dependencies If the attribute X is actually a member of the collection U, then the functional dependency
+U → X is definitely and boringly true, as you can see from the definition.
+Augmentation If the dependency U → X has already been postulated, and if V is a bigger collection of attributes
+than U, then V → X must also be true.
+Transitivity If we already know that U → X holds for every X that is mentioned in the collection V , and if we
+further know that V → Y is true, then U → Y must also hold. Again, this follows easily from the definition.
+These three rules are known as Armstrong’s Axioms, and it can be shown that no further rule is needed to derive
+all functional dependencies that hold as a consequence of postulating some. One says that Armstrong’s Axioms
+are sound and complete.
+Conversely, if we are charged with stating all functional dependencies which should hold for a given relational
+schema, then it is sufficient to list a basis for them, that is, a collection of dependencies from which all others
+follow by Armstrong’s Axioms.
+Notation issues: Note that when we write a functional dependency U → X, U is a collection of attributes whereas
+X is a single attribute, e.g., cid,year → numbers. So, the notation is asymmetric. We can extend the notation
+so that we have collections of attributes on both the sides of→. We define U → V to mean that U → X holds for
+every X in V . Using this notation, we can see the transitivity rule in the more conventional form: if U → V and
+V → Y then U → Y .
+82. A closure operation for functional dependencies. Although Armstrong’s Axioms are a complete method
+for finding additional dependencies, the derivation process itself is computationally expensive: in the worst case it
+runs in exponential time. For the following special case there is a simpler method.
+Suppose we are given a family F of functional dependencies, and we ask whether a particular functional dependency
+U → X is a logical consequence of the given ones. To answer this question, we successively augment the
+set of attributes U with further attributes which functionally depend on (a subset of) U. So for each functional
+dependency (V → Y ) ∈ F we check whether V is a subset of U. If this is the case, then the attribute Y can be
+added to U, and the rule V → Y can be deleted from F (because it has made its contribution and will not be
+needed again). The process is repeated until no further rule remains in F whose left hand side is a subset of the
+current U. The new U contains all attributes which depend functionally on the original U. If X is among them,
+then U → X is true, otherwise it is false.
+Here is an example. Suppose we are given F = {AB → C,CB → D,A → B} and ask whether A → D follows
+from this. The completion process proceeds as follows:
+U F
+start state {A} {AB → C,CB → D,A → B}
+{A,B} {AB → C,CB → D}
+{A,B,C} {CB → D}
+final state {A,B,C,D} {}
+We find that all four attributes depend on A, and in particular, A → D is a logical consequence of the given
+dependencies.

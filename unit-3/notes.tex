@@ -13,6 +13,14 @@ balance($ \square $) = 0
 balance(Fork(x, left, right)) = height(left) - height(right)
 \end{lstlisting}
 
+\begin{center}
+  \begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=15cm]{unit-3/figures/balance.png}
+  %   \caption*{The structure of a packet frame.}
+  \end{figure}
+  \end{center}
+
 \subsubsection{Perfectly Balanced Binary Tree}
 
 A binary tree is perfectly balanced if the left and right subtrees of any node have the same height.
@@ -23,8 +31,8 @@ The height \( h \) and size \( n \) of a perfectly balanced tree are related by 
   h = \log_{2} \left( n + 1 \right)
 \end{gather*}
 
-The number of nodes grows exponentially as a function of the height.
-The height grows logarithmically as a function of the number of nodes.
+The number of nodes grows \textbf{exponentially} as a function of the height. \\
+The height grows \textbf{logarithmically} as a function of the number of nodes. \\
 Even for a small height, there is a large number of nodes.
 
 \subsubsection{AVL Balance}
@@ -37,8 +45,15 @@ AVL~balance is simpler to maintain and is sufficient for fast algorithms.
 
 The size \( n \) of an AVL tree of height \( h \) has an upper bound of the size of a perfectly balanced tree of the same height, and a lower bound of the size of a \emph{Fibonacci~tree} of the same height.
 \begin{equation*}
-  F\!\left( h + 2 \right) - 1 \leq n \leq 2^{h} - 1
+  F\!\left( h + 2 \right) - 1 \leq n \leq 2^{h} - 1 \\
 \end{equation*}
+
+when h=3 \\
+\begin{math}
+F(h+2)-1 = F(5)-1 = 5-1 = 4  \\
+2^3-1 = 7 \\
+4 \leq n \leq 7 \\
+\end{math}
 
 The \emph{Fibonacci~sequence} is defined as follows.
 \begin{gather*}
@@ -46,16 +61,6 @@ The \emph{Fibonacci~sequence} is defined as follows.
   F\!\left( 1 \right) = 1 \\
   F\!\left( k + 2 \right) = F\!\left( k \right) + F\!\left( k + 1 \right)
 \end{gather*}
-
-Fibonacci numbers can also be calculated using \emph{Binet's formula}.
-\begin{equation*}
-  F\!\left( k \right) = \frac{\left( \frac{1 + \sqrt{5}}{2} \right)^{k} - \left( \frac{1 - \sqrt{5}}{2} \right)^{k}}{\sqrt{5}} = \bigo{{1.618\ldots}^{k}}
-\end{equation*}
-
-Thus, the size \( n \) of an AVL tree of height \( h \) lies in the range
-\begin{equation*}
-  \bigo{{1.618\ldots}^{h}} \leq n \leq \bigo{2^{h}}
-\end{equation*}
 
 This implies that the height \( h \) of an AVL tree of size \( n \) is of the order of the logarithm of \( n \).
 \begin{equation*}
@@ -92,6 +97,14 @@ The space complexity is \( \bigo{n} \) for both binary search trees and AVL tree
 
 If the insertion or deletion of a single element from an AVL tree causes it to lose balance, the tree could exist in one of four possible states of imbalance.
 These states can be classified as follows, where \( x \) is the deepest node where an imbalance occurs following an insertion into, or deletion from, subtree~\( z \).
+\begin{center}
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=15cm]{unit-3/figures/rotate_4_cases.png}
+ \caption*{4 cases}
+\end{figure}
+\end{center}
+\textcolor{red}{Start with the lowest node with an imbalance!}
 
 \begin{figure}[!htp]
   \centering

@@ -47,6 +47,86 @@ Given a list of $n$ numbers, create a straightforward Python function \texttt{ha
 
 \subsubsection{Q6. Merge Sort}
 Use Merge Sort to sort the given list $[9, 7, 5, 11, 12, 2, 14, 3, 10, 6]$. Show the steps.\\
+% \usetikzlibrary{shapes.multipart}
+
+% \tikzset{block/.style={
+%         font=\sffamily,
+%         draw=black,
+%         thin,
+%         fill=pink!50,
+%         rectangle split,
+%         rectangle split horizontal,
+%         rectangle split parts=#1,
+%         outer sep=0pt},
+%         %
+%         gblock/.style={
+%             block,
+%             rectangle split parts=#1,
+%             fill=green!30}
+%         }
+
+
+% \def\lvld{1.2}                  % Choose level distance
+% \pgfmathsetmacro\shft{-6*\lvld} % Calculate the yshift for the green tree
+
+% \begin{tikzpicture}[level distance=\lvld cm,
+%   level 1/.style={sibling distance=4cm},
+%   level 2/.style={sibling distance=2cm},
+%   level 3/.style={sibling distance=1cm},
+%   edgedown/.style={edge from parent/.style={draw=red,thick,-latex}},
+%   edgeup/.style={edge from parent/.style={draw=green!50!black,thick,latex-}}
+%   ]
+
+% % GREEN TREE (drawn first to let the middle line filled in pink)
+
+% \node[gblock=7,yshift=\shft cm] (A') {3 \nodepart{two} 9 \nodepart{three} 10 \nodepart{four} 27 \nodepart{five} 39 \nodepart{six}43 \nodepart{seven}82}
+% [grow=up,edgeup]
+% child {node[gblock=3] (B2') {9 \nodepart{two} 10 \nodepart{three} 82}
+% child {node[gblock=1] (C4') {10}
+% child {node[gblock=1] (D7') {10}}
+% }
+% child {node[gblock=2] (C2') {9 \nodepart{two} 82}
+% child {node[gblock=1] (D3') {82}}
+% child {node[gblock=1] (D4') {9}}
+% }
+% }
+% child {node[gblock=4] (B1') {3 \nodepart{two} 27 \nodepart{three} 39 \nodepart{four} 43}
+% child {node[gblock=2] (C3') {3 \nodepart{two} 43}
+% child {node[gblock=1] (D5') {3}}
+% child {node[gblock=1] (D6') {43}}
+% }
+% child {node[gblock=2] (C1') {27 \nodepart{two} 39}
+% child {node[gblock=1] (D1') {27}}
+% child {node[gblock=1] (D2') {39}}
+% }
+% };
+
+
+% % PINK TREE
+
+% \node[block=7] (A) {39 \nodepart{two} 27 \nodepart{three} 43 \nodepart{four} 3 \nodepart{five} 9 \nodepart{six}82 \nodepart{seven}10}
+% [grow=down,edgedown]
+% child {node[block=4] (B1) {39 \nodepart{two} 27 \nodepart{three} 43 \nodepart{four} 3}
+% child {node[block=2] (C1) {39 \nodepart{two} 27}
+% child {node[block=1] (D1) {39}}
+% child {node[block=1] (D2) {27}}
+% }
+% child {node[block=2] (C2) {43 \nodepart{two} 3}
+% child {node[block=1] (D3) {43}}
+% child {node[block=1] (D4) {3}}
+% }
+% }
+% child {node[block=3] (B2) {9 \nodepart{two} 82 \nodepart{three} 10}
+% child {node[block=2] (C3) {9 \nodepart{two} 82}
+% child {node[block=1] (D5) {9}}
+% child {node[block=1] (D6) {82}}
+% }
+% child {node[block=1] (C4) {10}
+% child {node[block=1] (D7) {10}}
+% }
+% };
+% \end{tikzpicture}
+
 \begin{center}
 \begin{tikzpicture}[
   grow=down,

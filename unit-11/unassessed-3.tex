@@ -1,5 +1,6 @@
 \subsection{Unassessed exercise 3}
 \subsubsection{Question 11: ER modelling}
+
 Develop (extended) entity-relationship diagrams (complete with multiplicities and annotations) to model the following real-world situations:
 
 \begin{enumerate}[label=\alph*.]
@@ -131,6 +132,576 @@ Carry out logical design (table design) for the ER-models developed for Question
     Focus, in particular, on any tables for weak entities and relationships, because these tables would have foreign keys.
 \end{itemize}
 
-\subsection*{Question 14: Logical design}
+\subsubsection{Question 14: Logical design}
 
 Carry out logical design (table design) for the ER-models developed for Question 12. But you might omit writing \texttt{CREATE TABLE} statements if you find them tedious.
+
+% \documentclass{article}
+% \usepackage{geometry}
+% \usepackage{listings}
+% \usepackage{color}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{enumitem}
+% \geometry{margin=1in}
+% \definecolor{lightgray}{gray}{0.95}
+% \lstset{
+%   backgroundcolor=\color{lightgray},
+%   basicstyle=\ttfamily\footnotesize,
+%   breaklines=true,
+%   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+% }
+
+% \title{Solutions for Exercise Sheet 3, Part B}
+% \author{}
+% \date{}
+
+% \begin{document}
+
+
+\textbf{Question 13}
+
+\subsection*{Schemas:}
+
+\textbf{a. For the tourist information system, the schemas are:} \\
+region(\underline{name}) \\
+city(\underline{cid}, name, region) \\
+street(cid, name, main, length) \\
+intersect(cid, street1, street2) \\
+attraction(aid, name, cid, street) \\
+park(\underline{aid}) -- do we really need this? \\
+museum(aid, opentime, closetime, entryfee) \\
+theatre(aid, showtime, showprice) \\
+
+The \texttt{in} relationship between city and region does not need to be a separate table, because a city can only be
+in one region. Likewise, for the relationships marked as \texttt{has} and \texttt{on} in the E-R diagram.
+
+Note that \texttt{street}, being a weak entity, depends on its parent entity (city) for its identity. So its primary key
+consists of both the containing city and its own name. We could postulate an additional \texttt{sid} identifier for
+each street. This is optional. The field \texttt{main} is a boolean field to say whether the street is a main street or
+not.
+
+For the class hierarchy of attractions, we are making every entity into a table. (Note that the coverage of the
+subclasses is partial. So \texttt{attraction} has to be a table no matter what.) The \texttt{aid} number is assigned to
+all attractions. Each particular kind of attraction uses the very same \texttt{aid}.
+
+Note that \texttt{parks} do not seem to have any attributes other than the generic attributes common to all attractions.
+If so, we don’t need a separate table for parks.
+
+\textbf{b. For the hotel information system, our schemas are as follows:} \\
+\begin{verbatim}
+accommodation(aid, name, type)
+accomtype(name)
+place(placeid, name, type)
+distance(aid, placeid, dist)
+nearby(aid1, aid2)
+roomtype(aid, name, dailyrate, occupancy)
+conference facility(aid, name, capacity, hiringfee)
+\end{verbatim}
+
+Here I have chosen to merge the three different kinds of accommodation into its superclass entity
+\texttt{accommodation}. Nothing specific needs to be stored about the subclass entities. However, we still need
+to be able to tell which type of accommodation each place is (hotel, B\&B, hostel). I have chosen to store
+these types in a separate table \texttt{accomtype}, and assigned id numbers to them, which is good for efficiency.
+But it would also be fine to use a simple string for the ``type'' attribute.
+
+For the room types, on the other hand, I have used the string attribute \texttt{name}, without generating additional
+id numbers. When we search for rooms, we will want to search based on the required occupancy (the
+number of people a room can accommodate) rather than the name that the hotel chooses to use for its rooms.
+
+For places, again, I have combined all the subclasses into the parent entity.
+
+\textbf{CREATE TABLE statements:} \\
+
+\textbf{a. For the tourist information system, we can use the following tables:} \\
+
+\begin{lstlisting}[language=SQL]
+CREATE TABLE region(
+  name VARCHAR(25) NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE city(
+  cid INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  name VARCHAR(25) NOT NULL,
+  region INTEGER NOT NULL REFERENCES region(name) ON DELETE NO ACTION
+);
+
+CREATE TABLE street(
+  cid INTEGER NOT NULL REFERENCES city(cid) ON DELETE CASCADE,
+  name VARCHAR(15) NOT NULL,
+  main BOOLEAN NOT NULL,
+  length INTEGER NOT NULL,
+  PRIMARY KEY(cid, name)
+);
+
+CREATE TABLE intersect(
+  cid INTEGER NOT NULL REFERENCES city(cid),
+  street1 VARCHAR(15) NOT NULL,
+  street2 VARCHAR(15) NOT NULL,
+  FOREIGN KEY (cid, street1) REFERENCES street (cid, name) ON DELETE CASCADE,
+  FOREIGN KEY (cid, street2) REFERENCES street (cid, name) ON DELETE CASCADE,
+  PRIMARY KEY (cid, street1, street2)
+);
+
+CREATE TABLE attraction(
+  aid INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  name VARCHAR(25) NOT NULL,
+  cid INTEGER NOT NULL REFERENCES city(cid) ON DELETE CASCADE,
+  street VARCHAR(15) NOT NULL,
+  FOREIGN KEY (cid, street) REFERENCES street (cid, name)
+);
+
+CREATE TABLE museum(
+  aid INTEGER NOT NULL REFERENCES attraction(aid) ON DELETE CASCADE,
+  opentime TIME,
+  closetime TIME,
+  entryfee DECIMAL(5,2) NOT NULL,
+  PRIMARY KEY (aid)
+);
+
+CREATE TABLE theatre(
+  aid INTEGER NOT NULL REFERENCES attraction(aid) ON DELETE CASCADE,
+  showtime TIME NOT NULL,
+  showprice DECIMAL(5,2) NOT NULL,
+  PRIMARY KEY (aid)
+);
+\end{lstlisting}
+
+\textbf{b. For the hotel information system, the tables are as follows:}
+
+\begin{lstlisting}[language=SQL]
+CREATE TABLE accommodation(
+  aid INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  name VARCHAR(25) NOT NULL,
+  type INTEGER NOT NULL REFERENCES accomtype(name) ON DELETE NO ACTION
+);
+
+CREATE TABLE accomtype(
+  name VARCHAR(15) NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE place(
+  placeid INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  name VARCHAR(25) NOT NULL,
+  type VARCHAR(10) -- airport, attraction or null
+);
+
+CREATE TABLE distance(
+  aid INTEGER NOT NULL REFERENCES accommodation(aid) ON DELETE CASCADE,
+  placeid INTEGER NOT NULL REFERENCES place(placeid) ON DELETE CASCADE,
+  dist INTEGER,
+  PRIMARY KEY(aid, placeid)
+);
+
+CREATE TABLE nearby(
+  aid1 INTEGER NOT NULL REFERENCES accommodation(aid) ON DELETE CASCADE,
+  aid2 INTEGER NOT NULL REFERENCES accommodation(aid) ON DELETE CASCADE,
+  PRIMARY KEY(aid1, aid2)
+);
+
+CREATE TABLE roomtype(
+  aid INTEGER NOT NULL REFERENCES accommodation(aid) ON DELETE CASCADE,
+  name VARCHAR(10) NOT NULL,
+  dailyrate INTEGER NOT NULL,
+  PRIMARY KEY (aid, name)
+);
+
+CREATE TABLE conference_facility(
+  aid INTEGER NOT NULL REFERENCES accommodation(aid) ON DELETE CASCADE,
+  name VARCHAR(10) NOT NULL,
+  capacity INTEGER NOT NULL,
+  hiringfee INTEGER NOT NULL,
+  PRIMARY KEY (aid, name)
+);
+\end{lstlisting}
+
+\section*{Question 14}
+
+\textbf{a. Car rental business:}
+
+Relational table schemas: Rental contracts have many relationships where the maximum multiplicity is 1.
+All those relationships can be absorbed into a single table.
+
+\begin{verbatim}
+vehicle(vid, license plate)
+vehicle class(name, rental rate)
+substitutable by(class1, class2)
+staff(staffid, firstname, lastname)
+customer(custid, commercial)
+commercial customer(custid, name, address, discount)
+private customer(custid, firstname, lastname, address)
+employee(custid, empid, firstname, lastname)
+rental contract(contractid, custid, class, vid◦, staffid◦)
+\end{verbatim}
+
+The \texttt{rental contract} table incorporates both the \texttt{for c} and \texttt{for v} relationships within itself. A rental
+contract starts out being a contract for a class, and then “graduates” into one for a vehicle when a specific
+vehicle gets assigned. So, allowing \texttt{vid} field to be null within the same table is enough to accommodate
+this processing. The \texttt{staffid} field would also get filled in at that time.
+
+The \texttt{employee} table has an (\texttt{empid}) field to account for the possibility that there could be multiple em-
+ployees with the same name. It is expected to be specific to the employing company (the “commercial
+customer”). You would want this field to be a string, because we have no idea what kind of employee id’s
+the employers would use.
+
+\textbf{b. United Nations:} \\
+Relational table schemas:
+
+\begin{verbatim}
+geographic unit(gid, name, continent, population, area, capital, independent)
+borders(gid, gid)
+ethnic group(gid, group, population percentage)
+alliance(allianceid, name, type)
+alliance member(gid, allianceid)
+territory(gid, controlling country)
+occupied country(gid, occupying country)
+\end{verbatim}
+
+Note that we have added a boolean attribute \texttt{independent} to geographic units, which captures whether
+a unit is an independent country. We do not need a separate table for independent countries. However,
+\texttt{territorires} and \texttt{occupied countries} need separate tables because of the additional information required for
+them.
+
+
+
+
+\subsection{Unassessed Exercise Sheet 4}
+
+\subsubsection{Question 16: Working with functional dependencies}
+
+Consider a schema T (A,B,C,D,E) with the following functional dependencies: A$\rightarrow$ B, BC $\rightarrow$ E, ED $\rightarrow$ A.
+
+\begin{enumerate}[label=\alph*.]
+  \item Find all the candidate keys for the schema T.\\
+  (Hint: Note that the collection of all attributes ABCDE forms a candidate key. You can progressively
+  remove from this collection one attribute at a time, and determine whether it still remains a candidate key. A
+  minimal candidate key is one from which you cannot remove any further attributes. You should attempt to
+  find at least one minimal candidate key during the lab session, and hunt for the remaining ones at home.)
+  \item Is the table in Boyce-Codd normal form (BCNF)?
+  \item If it is not, decompose it into BCNF using the normalisation procedure of Section 11.
+\end{enumerate}
+
+\begin{enumerate}[label=\alph*.]
+  \item The minimal candidate keys are:\\
+  BCD, ACD, CDE
+
+  Taking BCD for example, we can see that BC determine E and ED determine A. So the other two
+  attributes are determined by BCD. So, it is a candidate key.
+
+  To remove any single attribute from this collection, we would need to show that the other attributes determine
+  the removed attribute. But there is no attribute that can be removed.
+
+  \item The table is evidently not in BCNF. The functional dependency A $\rightarrow$ B, for example, would need that the
+  left hand side A should be a superkey (superset of a candidate key). Since A is not a candidate key, this is
+  not possible.
+
+  \item Let us choose ED $\rightarrow$ A as the harmful functional dependency to be removed from the table. The closure of
+  ED, using the algorithm in Section 10, is EDAB. So, we can decompose the table T into two tables:
+
+  \texttt{T1(ABDE), T2(CDE)}
+
+  Now, the functional dependency ED $\rightarrow$ A exists only in T1 and it is on a candidate key. We have fortuitously
+  removed the other functional dependency BC $\rightarrow$ E, because the combination BC does not occur in either
+  table.
+
+  The remaining functional dependency is A $\rightarrow$ B. To remove it, we find the closure of A, which is just AB.
+  So, we decompose T1 into
+
+  \texttt{T11(AB), T12(ADE)}
+
+  So, T11, T12, T2 is the final collection of tables obtained by normalisation procedure.
+
+  In the above, we chose to remove the functional dependency ED $\rightarrow$ A first. If we choose some other
+  functional dependency to be removed first, we might obtain another decomposition. Two other possible
+  decompositions arise in this way:
+
+  \texttt{ADE, CDE, AD}\\
+  \texttt{BCE, AB, ACD}
+\end{enumerate}
+\subsubsection{Question 17: Normalisation example}
+
+Consider the following schema for a table that arose in building a database system for aircraft testing in a small
+airport. The tests are represented by an ’IATA number’ (assigned by the International Air Travel Agency). The
+maximum score that can be received in the test is known. A particular airplane might receive smaller score than
+the maximum in an individual test.
+
+\texttt{test(IATAno, name, date, airplane, technician, duration, score, maxscore)}
+
+The attributes satisfy the following functional dependencies:
+
+\begin{itemize}
+  \item IATAno $\rightarrow$ name
+  \item IATAno $\rightarrow$ maxscore
+  \item IATAno, airplane, date $\rightarrow$ technician
+  \item IATAno, airplane, date $\rightarrow$ duration
+  \item IATAno, airplane, date $\rightarrow$ score
+\end{itemize}
+
+\begin{enumerate}[label=\alph*.]
+  \item Use the normalisation procedure to decompose the table into BCNF.
+  \item Briefly describe how each of the anomalies mentioned in Section 11 might arise with the original table, but
+  are avoided in the decomposed tables.
+\end{enumerate}
+
+\begin{enumerate}[label=\alph*.]
+  \item Using the normalisation procedure, we attempt to remove the functional dependencies with IATAno as their left
+  hand side. The closure of IATAno is the collection
+
+  \texttt{IATAno, name, maxscore}
+
+  So, we decompose the original table into two:
+
+  \texttt{testtype(IATAno, name, maxscore)}\\
+  \texttt{test(IATAno, airplane, date, technician, duration, score)}
+
+  All the functional dependencies are now on primary keys. So, the tables are in BCNF. Note that “testtype”
+  is quite a recognisable entity. It describes the valid types of tests that are conducted.
+
+  \item In the original table, the attributes “name” and “maxscore” would be duplicated over and over, representing
+  data redundancy.
+
+  Insertion anomalies would occur if a new record is inserted for a particular conduction of test, but the name or
+  maxscore attribute are entered wrongly. In that case, different records would have different names associated
+  with the same IATAno. Update anomalies might arise similarly.
+
+  Aggregation anomaly is theoretically possible, but it is hard to see it arising in realistic applications.
+
+  Deletion anomaly might occur if we archive old data. If a particular test was not performed in recent years,
+  then its name and maxscore attributes would be deleted inadvertently.
+\end{enumerate}
+\subsubsection{Question 18: Judging decompositions}
+
+\begin{enumerate}[label=\alph*.]
+  \item Assume that the functional dependencies AB $\rightarrow$ C, AB $\rightarrow$ D and BC $\rightarrow$ D, hold for the schema
+  (A,B,C,D). Which set(s) of attributes form a candidate key?
+
+  Consider each of the following decompositions and determine whether it is lossless. If so, say whether it is
+  redundancy reducing and dependency preserving. If all three properties hold determine whether the resulting
+  tables are in Boyce-Codd Normal Form.
+
+  \begin{enumerate}[label=\roman*.]
+    \item (A,B) \& (B,C,D)
+    \item (A,B,C) \& (B,C,D)
+    \item (A,B,D) \& (B,C,D)
+    \item (A,B,C,D) \& (B,C,D)
+  \end{enumerate}
+
+  \item Like the previous item: Assume A$\rightarrow$ B, A$\rightarrow$ C, A$\rightarrow$ D, A$\rightarrow$ E, B $\rightarrow$ C, and CD $\rightarrow$ E hold in schema
+  (A,B,C,D,E), and consider the decompositions
+
+  \begin{enumerate}[label=\roman*.]
+    \item (A,B) \& (B,C) \& (C,D,E)
+    \item (A,B,D) \& (B,C) \& (B,D,E)
+    \item (A,B,C,D) \& (B,C) \& (C,D,E)
+  \end{enumerate}
+\end{enumerate}
+
+\begin{enumerate}[label=\alph*.]
+  \item AB together form a (candidate) key as together these attributes determine CD by assumption and themselves
+  trivially.
+
+  \begin{enumerate}[label=\roman*.]
+    \item This is not lossless because the common attribute B is not a key for either table.
+    \item This is lossless because the common attributes BC are a key for the second table. We can assume
+    that BC is not a key for the original schema, or otherwise we would have the functional dependency
+    BC $\rightarrow$ A. Therefore the decomposition is redundancy reducing. It is also dependency preserving
+    because the functional dependency AB $\rightarrow$ D follows from those in the smaller tables by applying the
+    transitivity rule from Armstrong’s Axioms.\\
+    The resulting tables are in Boyce-Codd Normal Form because the left hand sides of the valid functional
+    dependencies are in fact keys for the tables in which they arise.
+    \item This is not lossless because the common attributes BD are not a key for either table.
+    \item This is lossless because BCD form a superkey of the second table. It is not redundancy reducing,
+    though, because the first table is the same as the original one. For this stupid reason it is, of course,
+    dependency preserving.
+  \end{enumerate}
+
+  \item Only A is a candidate key.
+
+  \begin{enumerate}[label=\roman*.]
+    \item The decomposition of (A,B,C) into (A,B) and (B,C) is lossless. But the decomposition of
+    (A,B,C,D) into (A,B,C) and (C,D,E) is not lossless.
+    \item This is lossless because we can reconstruct (A,B,C,D) by virtue of B $\rightarrow$ C. Now we observe that
+    by the transitivity rule from Armstrong’s Axioms also BD $\rightarrow$ E must hold, and then the whole table
+    can be reconstructed because the common attributes are B and D. However, it is not dependency
+    preserving because we cannot reconstruct CD $\rightarrow$ E from the dependencies which hold in the smaller
+    tables.
+    \item This is lossless because (A,B,C,D) and (C,D,E) overlap in C and D, and (B,C) is a subtable
+    of the first. It is also redundancy reducing but not to the maximal possible extent. It is dependency
+    preserving because all functional dependencies are based on one of the small tables, except for A $\rightarrow$ E
+    but this follows by transitivity. The result is not in Boyce-Codd Normal Form because (A,B,C,D)
+    still contains the non-trivial functional dependency B $\rightarrow$ C.
+  \end{enumerate}
+\end{enumerate}
+
+\subsubsection{Question 19: Evaluating functional dependencies}
+
+Each of the following relational schemata contains a (non-trivial) functional dependency. Discuss how harmful
+it is likely to be with regards to ``RAUDI'' (redundancy and the anomalies of aggregation, update, deletion and
+insertion). You should attempt to discuss at least one of them. If you have a study partner, it would be fun to
+discuss the issues between you.
+
+\begin{enumerate}[label=\alph*.]
+  \item Consider a schema for a table describing airline bookings. It would have attributes describing the customer
+  (name, address, etc), attributes describing the flight (airline, flight number, etc), date, and details of the credit
+  card that was used to pay for the flight. Discuss in this context the functional dependency
+
+  \texttt{credit card number $\rightarrow$ customer details}
+
+  \item Consider a schema for a table that describes the machines available from a computer store. There would be
+  attributes for model name, price, amount of RAM memory, etc. Discuss the functional dependency
+
+  \texttt{processor $\rightarrow$ clock speed}
+
+  \item Consider a schema for a table describing students, with the obvious attributes. Discuss the functional dependency
+
+  \texttt{home or overseas status, degree programme $\rightarrow$ tuition fee}
+
+  \item Consider a schema for a table containing scientific articles published in academic journals. We would have
+  attributes such as author, title, start page, end page, submission date, etc. There is also the year of publication
+  and the “journal volume”. (Journals publish between one and 10 volumes per year.) Discuss the functional
+  dependency
+
+  \texttt{journal name, volume number $\rightarrow$ year}
+\end{enumerate}
+
+\begin{enumerate}[label=\alph*.]
+  \item R: Customer details are quite bulky so any repetition is likely to be quite costly. It is also likely that some
+  customers make many bookings in a given time period, making such repetition quite real.\\
+  A: We might want to count how many customers have been served in a given period. In the given setup
+  this could be tricky because one would have to recognise when two customers are actually the same.\\
+  U: If a person’s address details change, it would be quite awkward to update the information.\\
+  D: Older records might be archived, leading to loss of customer details.\\
+  I: Entering new or returning customers might cause duplication or inconsistency.\\
+  \textbf{Conclusion:} Keep bookings and customer details in separate tables. Don’t store credit card info long-term.
+
+  \item R: Not too many models, so minimal issue.\\
+  A: Not many aggregation queries.\\
+  U: As CPUs get upgraded, keeping consistent clock speed is tricky.\\
+  D: Might lose data about rarely-used processors.\\
+  I: Minimal concern.\\
+  \textbf{Conclusion:} Decompose for cleanliness and efficiency.
+
+  \item R: High redundancy with large student bodies.\\
+  A: Not many aggregation issues.\\
+  U: Tuition fee updates are sensitive and must be consistent.\\
+  D: Might lose fee data if no current students are enrolled.\\
+  I: Tuition fee might be determined before student entry.\\
+  \textbf{Conclusion:} Should decompose.
+
+  \item R: Minor redundancy, small volume sizes.\\
+  A: Hard to count volumes by year.\\
+  U: Unlikely to change.\\
+  D: Deletions rare.\\
+  I: Volume year sometimes added late.\\
+  \textbf{Conclusion:} Don’t decompose.
+\end{enumerate}
+
+\subsubsection{Question 20: Suggesting functional dependencies}
+
+Consider the following schema which describes M.O.T. inspections of motor vehicles.
+
+\texttt{inspection(date of inspection,\\
+owner,\\
+owner address,\\
+owner contact phone,\\
+registration number,\\
+model,\\
+year of first registration,\\
+diesel or petrol,\\
+date of previous MOT,\\
+engineer,\\
+garage,\\
+garage address,\\
+garage MOT licence number,\\
+passed or not)}
+
+\begin{enumerate}[label=\alph*.]
+  \item Determine the candidate key(s).
+  \item Find plausible (and non-trivial) functional dependencies. In doing so, list your assumptions and discuss
+  whether they are reasonable.
+\end{enumerate}
+
+\begin{enumerate}[label=\alph*.]
+  \item The pair (registration number, date of inspection) is a candidate key.
+
+  \item Some possible dependencies:
+
+  \begin{itemize}
+    \item owner contact phone $\rightarrow$ owner
+    \item owner contact phone $\rightarrow$ owner address
+    \item registration number $\rightarrow$ model
+    \item registration number $\rightarrow$ year of first registration
+    \item registration number $\rightarrow$ diesel or petrol
+    \item registration number $\rightarrow$ date of previous MOT
+    \item engineer $\rightarrow$ garage
+    \item garage $\rightarrow$ garage address
+    \item garage MOT licence $\rightarrow$ garage
+  \end{itemize}
+
+  It has to be said that for most of these one can construct a counterexample, e.g., a garage may relocate during
+  the time covered by the database.
+\end{enumerate}
+
+\subsubsection{Question 21: Deriving functional dependencies}
+
+For each of the following assumed sets of functional dependencies (over the schema (A,B,C,D)) determine
+whether they imply A $\rightarrow$ D. If yes, justify your answer with the \textcolor{red}{closure algorithm}; if no, give a table which
+satisfies the assumed dependencies but not A $\rightarrow$ D.
+
+\begin{enumerate}[label=\alph*.]
+  \item AB $\rightarrow$ C, C $\rightarrow$ B, B $\rightarrow$ D
+  \item AB $\rightarrow$ C, CB $\rightarrow$ D, A$\rightarrow$ B
+  \item ABC $\rightarrow$ D, AB $\rightarrow$ C, A$\rightarrow$ B
+\end{enumerate}
+
+\begin{enumerate}[label=\alph*.]
+  \item Does not imply A $\rightarrow$ D.\\
+  \textbf{Counterexample:}
+
+  \begin{tabular}{|c|c|c|c|}
+  \hline
+  A & B & C & D \\
+  \hline
+  a & b1 & c1 & d1 \\
+  a & b2 & c2 & d2 \\
+  \hline
+  \end{tabular}
+
+  \item Does imply A $\rightarrow$ D:
+  \begin{enumerate}[label=\roman*.]
+    \item A $\rightarrow$ A (trivially)
+    \item A $\rightarrow$ B (assumption)
+    \item AB $\rightarrow$ C (assumption) 
+    \item A $\rightarrow$ C (transitivity applied to (i),(ii),and (iii))
+    \item BC $\rightarrow$ D (assumption) $\Rightarrow$ A $\rightarrow$ D (transitivity applied to (iv), (ii), and (iv))
+  \end{enumerate}
+
+  \item Same reasoning as above. Does imply A $\rightarrow$ D.
+\end{enumerate}
+
+{\color{red}
+\subsubsection{Question 22: Checking functional dependencies against a table}
+}
+List a basis from which one can derive all functional dependencies that are compatible with the following table:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+A & B & C & D \\
+\hline
+s1 & t1 & u1 & v1 \\
+s1 & t2 & u2 & v1 \\
+s2 & t2 & u3 & v1 \\
+s3 & t3 & u4 & v2 \\
+s3 & t3 & u5 & v3 \\
+\hline
+\end{tabular}
+\end{center}
+
+Because under C we have five different values, this attribute can functionally determine every other:
+
+\texttt{C $\rightarrow$ A, C $\rightarrow$ B, C $\rightarrow$ D}
+
+No other single attribute determines anything. The only other possible dependency is:
+
+\texttt{ABD $\rightarrow$ C}
